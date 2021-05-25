@@ -1,5 +1,6 @@
 # Sim api.
 from api import GameSetting, GameGui;
+from util import GameRenderGL;
 
 # Esse flag e do propio jogo, ele e so umas coisas retardadas mesmo.
 import pygame;
@@ -35,7 +36,7 @@ class Main:
 		# Agora e mais bonito pra fazer as guis, em termos tecnicos,
 		# do MinecraftEmPythonkjkjkjkkk nao era ruim, mas nao era flexivel.
 		# Nessa versao ficou supreendentemente mais profissional e flexivel.
-		self.game_gui.registry(gui.InitializingPosOpenGameGui());
+		self.game_gui.registry(gui.InitializingPosOpenGameGui(self));
 		self.game_gui.open("InitializingPosOpenGame");
 
 		self.refresh_display();
@@ -62,6 +63,11 @@ class Main:
 
 	def run_tick(self):
 		self.running = True;
+
+		self.fov = 90;
+		self.fog = 0.1;
+
+		GameRenderGL.prepare_world(self);
 
 		while self.running:
 			for event in pygame.event.get():
