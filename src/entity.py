@@ -38,6 +38,18 @@ class EntityPlayer(Entity):
 		self.flag.registry("flying", self.boolean(True));
 		self.flag.registry("godmode", self.boolean(True));
 
+	def do_jump(self):
+		flying = self.flag.get("flying");
+
+		if flying:
+			self.position_linear.y += 0.2;
+
+	def do_crouch(self):
+		flying = self.flag.get("flying");
+
+		if flying:
+			self.position_linear.y -= 0.2;
+
 	def boolean(self, value):
 		return value;
 

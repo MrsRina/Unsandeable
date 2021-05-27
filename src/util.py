@@ -1,6 +1,7 @@
-from OpenGL import GL as GL11, GLU;
+from pyglet.gl import *;
 
-import pygame;
+import pyglet.gl as GL11;
+import pyglet;
 import math;
 
 # Created by Rina, sim eu criei isso, na verdade, tudo que foi escrito nesse projeto e genuinamente meu.
@@ -8,62 +9,62 @@ class FontRenderer(object):
 	def __init__(self, font = None, size = None):
 		self.path  = font;
 		self.size  = size;
+		self.font = font;
 
 		self.cfont = None;
 
 		try:
-			self.cfont = pygame.font.SysFont(font, self.size);
+			self.cfont = pyglet.font.load(font, self.size);
 		except:
-			self.cfont = pygame.font.Font(self.path, self.size);
+			self.cfont = pyglet.font.load(self.path, self.size);
 
-	def get_width(self, string):
-		surface_text = self.cfont.render(string, 1, (255, 255, 255), False);
+		self.label = pyglet.text.Label("", font_name = self.font, font_size = self.size);
 
-		width, height = surface_text.get_size();
-
-		return width;
+	def get_width(self, string = None):
+		if string is None:
+			return self.label.content_width;
+		else:
+			return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_width;
 
 	def get_height(self):
-		surface_text = self.cfont.render("", 1, (255, 255, 255), False);
-
-		width, height = surface_text.get_size();
-
-		return height;
+		return self.label.content_height;
 
 	def render(self, text, x, y, color):
-		surface_text = self.cfont.render(text, 1, (255, 255, 255, 0), False);
-	
-		data          = pygame.image.tostring(surface_text, "RGBA");
-		width, height = surface_text.get_size();
+		self.label.text = text;
+		self.label.x = x;
+		self.label.y = y;
+		self.color = color;
 
-		GL11.glPushMatrix();
+		self.label.draw();
 
-		id = GL11.glGenTextures(1);
-
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
-
-		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
-		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
-
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);		
-
-		GL11.glColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0, color[3] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glTexCoord(0, 0); GL11.glVertex(x, y, 0);
-		GL11.glTexCoord(0, 1); GL11.glVertex(x, y + height, 0);
-		GL11.glTexCoord(1, 1); GL11.glVertex(x + width, y + height, 0);
-		GL11.glTexCoord(1, 0); GL11.glVertex(x + width, y, 0);
-		GL11.glEnd();
-
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-		GL11.glPopMatrix();
+		#GL11.glPushMatrix();
+#
+		#id = GL11.glGenTextures(1);
+#
+		#GL11.glEnable(GL11.GL_BLEND);
+		#GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+#
+		#GL11.glEnable(GL11.GL_TEXTURE_2D);
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
+#
+		#GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
+		#GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
+#
+		#GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);		
+#
+		#GL11.glColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0, color[3] / 255.0);
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord(0, 0); GL11.glVertex(x, y, 0);
+		#GL11.glTexCoord(0, 1); GL11.glVertex(x, y + height, 0);
+		#GL11.glTexCoord(1, 1); GL11.glVertex(x + width, y + height, 0);
+		#GL11.glTexCoord(1, 0); GL11.glVertex(x + width, y, 0);
+		#GL11.glEnd();
+#
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		#GL11.glDisable(GL11.GL_BLEND);
+		#GL11.glDisable(GL11.GL_TEXTURE_2D);
+#
+		#GL11.glPopMatrix();
 
 class GameRenderGL:
 	def convert_to_texture(surface):
@@ -87,17 +88,72 @@ class GameRenderGL:
 
 		return texture;
 
-	def render_block(x, y, z):
-		pass
+	def render_block(x, y, z, w, h, l, color):
+		GL11.glPushMatrix();
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glVertex3f(x, y, z + l);
+		GL11.glVertex3f(x, y + h, z + l);
+		GL11.glVertex3f(x + w, y + h, z + l);
+		GL11.glVertex3f(x + w, y, z + l);
+		GL11.glEnd();
+
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		GL11.glBegin(GL11.GL_QUADS);
+
+		GL11.glVertex3f(x + w, y, z);
+		GL11.glVertex3f(x + w, y + h, z);
+		GL11.glVertex3f(x, y + h, z);
+		GL11.glVertex3f(x, y, z);
+		GL11.glEnd();
+
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		GL11.glBegin(GL11.GL_QUADS);
+
+		GL11.glVertex3f(x, y + h, z);
+		GL11.glVertex3f(x, y + h, z + l);
+		GL11.glVertex3f(x, y, z + l);
+		GL11.glVertex3f(x, y, z);
+		GL11.glEnd();
+
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		GL11.glBegin(GL11.GL_QUADS);
+
+		GL11.glVertex3f(x + w, y, z);
+		GL11.glVertex3f(x + w, y, z + l);
+		GL11.glVertex3f(x + w, y + h, z + l);
+		GL11.glVertex3f(x + w, y + h, z);
+		GL11.glEnd();
+
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		GL11.glBegin(GL11.GL_QUADS);
+
+		GL11.glVertex3f(x + w, y + h, z);
+		GL11.glVertex3f(x + w, y + h, z + l);
+		GL11.glVertex3f(x, y + h, z + l);
+		GL11.glVertex3f(x, y + h, z);
+		GL11.glEnd();
+
+		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		GL11.glBegin(GL11.GL_QUADS);
+
+		GL11.glVertex3f(x, y, z);
+		GL11.glVertex3f(x, y, z + l);
+		GL11.glVertex3f(x + w, y, z + l);
+		GL11.glVertex3f(x + w, y, z);
+		GL11.glEnd();
+
+		GL11.glPopMatrix();
 
 	def position(x, y = None, z = None):
 		if y is None and z is None:
-			GL11.glTranslate(x.x, x.y, x.z);
+			GL11.glTranslatef(x.x, x.y, x.z);
 		else:
-			GL11.glTranslate(x, y, z);
+			GL11.glTranslatef(x, y, z);
 
 	def rotate(angle, x, y, z):
-		GL11.glRotate(angle, x, y, z);
+		GL11.glRotatef(angle, x, y, z);
 
 	def identity():
 		GL11.glLoadIdentity();
@@ -115,10 +171,11 @@ class GameRenderGL:
 
 	def world(main):
 		GL11.glViewport(0, 0, main.screen_width, main.screen_height);
+
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-	
-		GLU.gluPerspective(main.fov, (main.screen_width / main.screen_height), 0.1, main.fog);
+
+		gluPerspective(main.fov, (main.screen_width / main.screen_height), 0.1, main.fog);
 	
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
@@ -127,11 +184,13 @@ class GameRenderGL:
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 
 	def overlay(main):
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+
 		GL11.glViewport(0, 0, main.screen_width, main.screen_height);
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-	
-		GLU.gluOrtho2D(0, main.screen_width, main.screen_height, 0)
+
+		gluOrtho2D(0, main.screen_width, main.screen_height, 0);
 	
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
@@ -155,7 +214,6 @@ class TimerStamp:
 
 	def count(self, ms_div):
 		return (pygame.time.get_ticks() - self.ms) / ms_div;
-
 
 class Vec:
 	def __init__(self, x, y, z):

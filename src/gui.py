@@ -38,7 +38,7 @@ class InitializingPosOpenGameGui(Gui):
 			self.process_game_join();
 
 	def on_close(self):
-		self.main.background = [0, 0, 0];
+		self.main.background = [0, 190, 0];
 		self.main.no_render_world = False;
 
 	def on_open(self):
@@ -48,7 +48,7 @@ class InitializingPosOpenGameGui(Gui):
 	def on_render(self, mx, my, partial_ticks):
 		text = "Press SPACE to continue!";
 
-		x = (self.main.screen_width / 2) - (self.main.font_renderer.get_width(text) / 2);
+		x = (self.main.screen_width / 2) - (self.main.font_renderer.get_width() / 2);
 		y = (self.main.screen_height / 2) + (self.main.screen_height / 3);
 
 		self.main.font_renderer.render(text, x, y, [255, 255, 255, self.alpha]);

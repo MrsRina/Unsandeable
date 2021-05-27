@@ -1,6 +1,8 @@
 from util import Vec, GameRenderGL, Math;
+from pyglet.window import key;
 
-import pygame;
+import pyglet;
+import math;
 
 class Data:
 	def __init__(self, context):
@@ -61,11 +63,12 @@ class GameSetting:
 		self.setting_in_game.value("mouse-sensivity", 0.1);
 
 		# Movement stuffs.
-		self.setting_in_game.value("move-forward", pygame.K_w);
-		self.setting_in_game.value("move-backward", pygame.K_s);
-		self.setting_in_game.value("move-left", pygame.K_a);
-		self.setting_in_game.value("move-right", pygame.K_d);
-		self.setting_in_game.value("move-jump", pygame.K_SPACE);
+		self.setting_in_game.value("move-forward", key.W);
+		self.setting_in_game.value("move-backward", key.S);
+		self.setting_in_game.value("move-left", key.A);
+		self.setting_in_game.value("move-right", key.D);
+		self.setting_in_game.value("move-jump", key.SPACE);
+		self.setting_in_game.value("move-crouch", key.LSHIFT);
 
 		# Registry all settings.
 		self.registry(self.setting_fullscreen);
@@ -148,10 +151,6 @@ class GameGui:
 		if self.current_gui is not None:
 			self.current_gui.on_key_event(key, state);
 
-	def process_key(self, keys):
-		if self.current_gui is not None:
-			self.current_gui.on_key(keys);
-
 	def process_mouse_event(self, mx, my, button, state):
 		if self.current_gui is not None:
 			self.current_gui.on_mouse_event(mx, my, button, state);
@@ -164,7 +163,7 @@ class Controller:
 	def __init__(self, main, entity, camera):
 		self.main = main;
 		self.entity = entity;
-		self.speed = 50000;
+		self.speed = 1000;
 		self.camera = camera;
 
 	def keyboard(self, keys):
@@ -183,6 +182,12 @@ class Controller:
 		if keys[self.main.game_settings.setting_in_game.value("move-right")]:
 			self.entity.position_linear.x -= Math.moveX(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
 			self.entity.position_linear.z -= Math.moveZ(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
+
+		if keys[self.main.game_settings.setting_in_game.value("move-jump")]:
+			self.entity.do_jump();
+
+		if keys[self.main.game_settings.setting_in_game.value("move-crouch")]:
+			self.entity.do_crouch();
 
 	def update(self):
 		self.camera.position.x = self.entity.position.x;
@@ -208,31 +213,22 @@ class Camera:
 
 		self.position = Vec(0, 0, 0);
 
-	def process_yaw(self, amount):
-		self.yaw -= amount;
-
-	def process_pitch(self, amount):
-		self.pitch += amount;
-
 	def update(self):
 		GameRenderGL.identity();
+		GameRenderGL.rotate(-self.pitch, 1, 0, 0)
+		GameRenderGL.rotate(self.yaw, 0, 1, 0);
+		GameRenderGL.position(-self.position.x, -self.position.y, -self.position.z);
 
-		keys = pygame.key.get_pressed();
-		rel  = pygame.mouse.get_rel();
-
+	def update_mouse(self):
 		if self.focus:
-			self.process_yaw((rel[0]) * self.speed_mouse_sensivity);
-			self.process_pitch((rel[1]) * self.speed_mouse_sensivity);
+			self.yaw += (self.main.rel[0]) * self.speed_mouse_sensivity;
+			self.pitch += (self.main.rel[1]) * self.speed_mouse_sensivity;
 
-		pygame.event.set_grab(self.focus)
-		pygame.mouse.set_visible(self.focus is not True);
+		self.main.window.set_exclusive_mouse(self.focus);
+		self.main.window.set_mouse_visible(self.focus is not True);
 
 		if self.pitch >= 90:
 			self.pitch = 90;
 
 		if self.pitch <= -90:
 			self.pitch = -90;
-
-		GameRenderGL.rotate(self.pitch, 1, 0, 0)
-		GameRenderGL.rotate(360 - self.yaw, 0, 1, 0);
-		GameRenderGL.position(-self.position.x, -self.position.y, -self.position.z);

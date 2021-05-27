@@ -1,8 +1,7 @@
-from util import GameRenderGL;
-from api import Face;
+from util import GameRenderGL, Vec;
+from api import Face, Data;
 
-from OpenGL import GL as GL11;
-
+import pyglet.gl as GL11;
 import pygame;
 import flag;
 import os;
@@ -137,6 +136,130 @@ class Skybox:
 		GL11.glColor(1, 1, 1);
 		GL11.glPopMatrix();
 
+class Block:
+	def __init__(self, x, y, z):
+		self.flag = Data("Block");
+
+		self.x = x;
+		self.y = y;
+		self.z = z;
+
+		self.w = 1;
+		self.h = 1;
+		self.l = 1;
+
+		self.textures = {};
+
+	def init(self):
+		self.flag.registry("type", "air");
+
+	def texture(self, type, path):
+		loaded = True;
+
+		for i in range(0, len(flag.FACES)):
+			sides = flag.FACES[i];
+			file_path = os.path.join(os.path.abspath(path + sides));
+
+			try:
+				self.textures[sides] = GameRenderGL.convert_to_texture(pygame.image.load(file_path + ".png"));
+			except:
+				loaded = False;
+
+				break;
+
+		if loaded:
+			self.flag.set("type", type);
+
+	def get_type(self):
+		return self.flag.get("type");
+
+	def update(self):
+		pass
+
+	def render(self):
+		if self.get_type() == "air":
+			return;
+
+		GL11.glColor(1, 1, 1);
+
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["front"]);
+#
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord2f(1, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z + self.l);
+		#GL11.glTexCoord2f(1, 1);
+		#GL11.glVertex3f(self.x, self.y + self.h, self.z + self.l);
+		#GL11.glTexCoord2f(0, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z + self.l);
+		#GL11.glTexCoord2f(0, 0);
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z + self.l);
+		#GL11.glEnd();
+#
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["back"]);
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord2f(1, 0)
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z);
+		#GL11.glTexCoord2f(1, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z);
+		#GL11.glTexCoord2f(0, 1);
+		#GL11.glVertex3f(self.x, self.y + self.h, self.z);
+		#GL11.glTexCoord2f(0, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z);
+		#GL11.glEnd();
+#
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["left"]);
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord2f(1, 1);
+		#GL11.glVertex3f(self.x, self.y + self.h, self.z);
+		#GL11.glTexCoord2f(0, 1);
+		#GL11.glVertex3f(self.x, self.y + self.h, self.z + self.l);
+		#GL11.glTexCoord2f(0, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z + self.l);
+		#GL11.glTexCoord2f(1, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z);
+		#GL11.glEnd();
+#
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["right"]);
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord2f(0, 0);
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z);
+		#GL11.glTexCoord2f(1, 0);
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z + self.l);
+		#GL11.glTexCoord2f(1, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z + self.l);
+		#GL11.glTexCoord2f(0, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z);
+		#GL11.glEnd();
+
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["up"]);
+		GL11.glBegin(GL11.GL_QUADS);
+		GL11.glTexCoord2f(0, 0);
+		GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z);
+		GL11.glTexCoord2f(1, 0);
+		GL11.glVertex3f(self.x + self.w, self.y + self.h, self.z + self.l);
+		GL11.glTexCoord2f(1, 1);
+		GL11.glVertex3f(self.x, self.y + self.h, self.z + self.l);
+		GL11.glTexCoord2f(0, 1);
+		GL11.glVertex3f(self.x, self.y + self.h, self.z);
+		GL11.glEnd();
+
+		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, self.textures["down"]);
+		#GL11.glBegin(GL11.GL_QUADS);
+		#GL11.glTexCoord2f(0, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z);
+		#GL11.glTexCoord2f(1, 0);
+		#GL11.glVertex3f(self.x, self.y, self.z + self.l);
+		#GL11.glTexCoord2f(1, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z + self.l);
+		#GL11.glTexCoord2f(0, 1);
+		#GL11.glVertex3f(self.x + self.w, self.y, self.z);
+		#GL11.glEnd();
+
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+
 class World:
 	def __init__(self, main):
 		self.main = main;
@@ -145,6 +268,16 @@ class World:
 		self.loaded_chunk = [];
 		self.seed = 0;
 		self.time = 0;
+
+	def load_chunk_dirty(self, length, y):
+		for x in range(-length, length):
+			for z in range(-length, length):
+				dirty = Block(x, y, z);
+
+				dirty.init();
+				dirty.texture("dirty", "textures/blocks/dirty/dirty_");
+
+				self.loaded_chunk.append(dirty);
 
 	def add(self, entity):
 		self.entity_list.append(entity);
@@ -173,12 +306,18 @@ class World:
 		return None;
 
 	def render(self, skybox):
+		for blocks in self.loaded_chunk:
+			blocks.render();
+
 		skybox.render();
 
 	def update(self, skybox):
-		delta_time = self.main.delta_time;
+		delta_time = self.main.partial_ticks;
 
 		for entities in self.entity_list:
 			entities.update(delta_time);
+
+		for blocks in self.loaded_chunk:
+			blocks.update();
 
 		skybox.update();

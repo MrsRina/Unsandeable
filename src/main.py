@@ -3,27 +3,29 @@ from api import GameSetting, GameGui, Camera, Controller;
 from util import GameRenderGL, FontRenderer;
 from entity import EntityPlayer;
 from world import World, Skybox;
+from pyglet.window import key;
+from pyglet.gl import *
 
 # Esse flag e do propio jogo, ele e so umas coisas retardadas mesmo.
-import pygame;
+import pyglet;
+import pyglet.gl as GL11;
 import flag;
 import gui;
 import sys;
 
 # Balls?
-pygame.init();
 
 # Resolvi reescrever de madrugada, sao literalmente 02:07 da manha...
 # Agora sim... eu vou fazer isso aqui pra ser algo insano, eu to pensando na real.
 # e em fazer outro jogo, hihi... nao 3D e nem Minecraft.
-class Main:
+class Main(pyglet.window.Window):
 	def __init__(self):
 		# Nigger.
 		self.screen_width = 800;
 		self.screen_height = 600;
 
 		# Nao vou especificar a versao porque nao precisa ainda.
-		self.window_title = "Unsandeable v1.0";
+		self.window_title = 'Unsandeable v1.0';
 
 		# Inicia as coisas importantes, no init nem tudo tem coisa, mas posso usar futuramente.
 		print("Initializing main stuffs.");
@@ -35,7 +37,7 @@ class Main:
 		print("Game settings initialized.");
 
 		self.refresh_display();
-		self.refresh_title();
+		self.set_fullscreen();
 
 		print("Created window.");
 
@@ -52,7 +54,8 @@ class Main:
 		print("OpenGL camera initialized.");
 
 		# Player.
-		self.player = EntityPlayer(888);
+		self.player = EntityPlayer("Bolas");
+		self.player.registry(888);
 		self.player.init();
 
 		print("Player ID " + str(self.player.id) + " client initialized.");
@@ -83,25 +86,18 @@ class Main:
 		print("Unsandeable v1.0 started! :)!");
 
 	def refresh_display(self):
-		flags = pygame.OPENGL | pygame.DOUBLEBUF; 
+		self.window = pyglet.window.Window(width = self.screen_width, height = self.screen_height, caption = self.window_title, resizable = True);
 
-		# Deveria usar uma lista? Talvez nao, ficaria com menos performance.
-		# E nos estamos falando de Python e tambem de flexibilidade,
-		# sempre vai ser mais facil especificar uma variavel do que algo em uma lista.
-		# bjs vou ir dormir, ja sao 02:17.
+	def set_fullscreen(self):
 		if self.game_settings != None and self.game_settings.setting_fullscreen.value("active"):
-			flags |= pygame.FULLSCREEN;
-
 			self.screen_width  = self.game_settings.setting_fullscreen.value("width");
 			self.screen_height = self.game_settings.setting_fullscreen.value("height");
 
-		# Tchau thau, se quer ler coisas, le isso por ultimo, dessa funcao tudo.
-		self.display = pygame.display.set_mode((self.screen_width, self.screen_height), flags);
+			self.window.set_fullscreen(True);
+			self.window.set_width(self.screen_width);
+			self.window.set_height(self.screen_height);
 
-	def refresh_title(self):
-		pygame.display.set_caption(self.window_title);
-
-	def run_tick(self):
+	def init(self):
 		self.running = True;
 
 		self.fov = self.game_settings.setting_fov.value("amount");
@@ -116,70 +112,41 @@ class Main:
 		self.fps = 60;
 		self.partial_ticks = 1;
 
-		self.clock = pygame.time.Clock();
 		self.last_delta_time = 0;
 		self.delta_time = 0;
 
 		self.no_render_world = False;
 		self.font_renderer = FontRenderer("Verdana", 19);
 
+		self.keys = key.KeyStateHandler();
+		self.window.push_handlers(self.keys);
+
+		self.rel = [0, 0];
+
 		# Abrimos a primeira gui do jogo.
 		self.game_gui.open("InitializingPosOpenGame");
+		self.world.load_chunk_dirty(10, 0);
 
-		GameRenderGL.setup(self);
+	def render(self):
+		GameRenderGL.clear(self);
+		GameRenderGL.world(self);
 
-		while self.running:
-			self.update_partial_ticks();
+		self.camera.update();
 
-			# Render part.
+		if self.no_render_world is False:
+			self.do_world_render();
 
-			GameRenderGL.clear(self);
+		GameRenderGL.overlay(self);
 
-			if self.no_render_world is False:
-				self.do_world_render();
+		self.do_overlay_render();
 
-			GameRenderGL.push_matrix();
-			GameRenderGL.overlay(self);
+	def update_mouse(self, mx, my, dx, dy):
+		# MORRA, MORRA MORRA, NAO LIGO, MORRA.
+		self.mouse_position_x = mx, my;
+		self.mouse_position_y = mx, my;
 
-			self.do_overlay_render();
-
-			GameRenderGL.world(self);
-			GameRenderGL.pop_matrix();
-
-			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					self.game_settings.on_save();
-					self.running = False;
-
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					self.mouse_event(event.button, flag.KEYDOWN);
-
-				if event.type == pygame.MOUSEBUTTONUP:
-					self.mouse_event(event.button, flag.KEYUP);
-
-				if event.type == pygame.KEYDOWN:
-					self.keyboard_event(event.key, flag.KEYDOWN);
-
-				if event.type == pygame.KEYUP:
-					self.keyboard_event(event.key, flag.KEYUP);
-
-			# Update part.
-			# Quem literalmente e voce.
-			self.keys = pygame.key.get_pressed();
-
-			# MORRA, MORRA MORRA, NAO LIGO, MORRA.
-			self.mouse_position_x = pygame.mouse.get_pos()[0];
-			self.mouse_position_y = pygame.mouse.get_pos()[1];
-
-			self.keyboard();
-			self.update();
-
-			pygame.display.flip();
-
-		if self.running is False:
-			print("Bye!");
-
-			sys.exit();
+		self.rel = [dx, dy];
+		self.camera.update_mouse();
 
 	def update_partial_ticks(self):
 		self.partial_ticks = self.clock.tick(self.fps) / 60;
@@ -188,26 +155,34 @@ class Main:
 
 	def do_world_render(self):
 		if self.world is not None:
+			GameRenderGL.render_block(0, 0, 0, 1, 1, 1, [255, 255, 255, 255])
+
 			self.world.render(self.skybox);
 
 	def do_overlay_render(self):
 		self.game_gui.process_render(self.mouse_position_x, self.mouse_position_y, self.partial_ticks);
 
-	def mouse_event(self, key, state):
+	def mouse_event(self, mx, my, key, state):
 		# Eu to processando assim agora vou ir dormir, isso e otro diakkkkk sao quase 3 horas da manha.
 		# Meu Deus, eu preciso de um namorado.
 		self.game_gui.process_mouse_event(self.mouse_position_x, self.mouse_position_y, key, state);
 
-	def keyboard_event(self, key, state):
+	def keyboard(self, keys):
+		if self.world is not None and self.game_gui.current_gui is None:
+			self.controller.keyboard(self.keys);
+
+	def keyboard_event(self, k, state):
 		# Eu to processando assim agora vou ir dormindo.
-		self.game_gui.process_key_event(key, state);
+		self.game_gui.process_key_event(k, state);
 
 		if self.world is not None:
-			if self.game_gui.current_gui is None and key == pygame.K_ESCAPE:
+			if self.game_gui.current_gui is None and k == key.ESCAPE and state == flag.KEYUP:
 				self.game_gui.open("GamePaused");
 
-	def update(self):
-		self.camera.update();
+	def update(self, dt):
+		self.partial_ticks = 2;
+
+		self.keyboard(self.keys);
 
 		self.camera.focus = self.game_gui.current_gui is None;
 		self.camera.speed_mouse_sensivity = self.game_settings.setting_in_game.value("mouse-sensivity");
@@ -219,15 +194,54 @@ class Main:
 			self.world.update(self.skybox);
 			self.controller.update();
 
-	def keyboard(self):
-		# kkkksim eu fiz isso tambem, vou colocar o mouse e um monte de coisas pra entidades.
-		# boa noite.
-		self.game_gui.process_key(self.keys);
-
-		if self.world is not None and self.game_gui.current_gui is None:
-			self.controller.keyboard(self.keys);
-
 if (__name__ == "__main__"):
 	# bo a noit;l
 	game = Main();
-	game.run_tick();
+
+	@game.window.event
+	def on_close():
+		game.running = False;
+
+	@game.window.event
+	def on_mouse_press(x, y, button, modifiers):
+		game.mouse_event(x, y, button, flag.KEYDOWN);
+
+	@game.window.event
+	def on_mouse_release(x, y, button, modifiers):
+		game.mouse_event(x, y, button, flag.KEYUP);
+
+	@game.window.event
+	def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
+		pass
+
+	@game.window.event
+	def on_mouse_motion(x, y, dx, dy):
+		game.update_mouse(x, y, dx, dy);
+
+	@game.window.event
+	def on_key_press(symbol, modifiers):
+		if symbol == pyglet.window.key.ESCAPE:
+			return pyglet.event.EVENT_HANDLED
+
+		game.keyboard_event(symbol, flag.KEYDOWN);
+
+	@game.window.event
+	def on_key_release(symbol, modifiers):
+		game.keyboard_event(symbol, flag.KEYUP);
+
+	@game.window.event
+	def on_resize(width, height):
+		game.screen_width = width;
+		game.screen_height = height;
+
+	@game.window.event
+	def on_draw():
+		game.window.clear();
+		game.render();
+
+	game.init();
+
+	GameRenderGL.setup(game);
+
+	pyglet.clock.schedule_interval(game.update, 1.0 / game.fps);
+	pyglet.app.run();
