@@ -1,5 +1,5 @@
 # Sim api.
-from api import GameSetting, GameGui, Camera, Controller;
+from api import GameSetting, GameGui, Camera, Controller, log;
 from util import GameRenderGL, FontRenderer;
 from entity import EntityPlayer;
 from world import World, Skybox;
@@ -12,8 +12,6 @@ import pyglet.gl as GL11;
 import flag;
 import gui;
 import sys;
-
-# Balls?
 
 # Resolvi reescrever de madrugada, sao literalmente 02:07 da manha...
 # Agora sim... eu vou fazer isso aqui pra ser algo insano, eu to pensando na real.
@@ -28,54 +26,58 @@ class Main(pyglet.window.Window):
 		self.window_title = 'Unsandeable v1.0';
 
 		# Inicia as coisas importantes, no init nem tudo tem coisa, mas posso usar futuramente.
-		print("Initializing main stuffs.");
+		log("Initializing main stuffs.");
 
 		# Esse game settings e perfeito.
 		self.game_settings = GameSetting(self);
 		self.game_settings.init();
 
-		print("Game settings initialized.");
+		log("Game settings initialized.");
 
 		self.refresh_display();
 		self.set_fullscreen();
 
-		print("Created window.");
+		log("Created window.");
 
 		# Meu crush esse game gui.
 		self.game_gui = GameGui(self);
 		self.game_gui.init();
 
-		print("All GUIs initialized.");
+		log("All GUIs initialized.");
 
 		# Camera.
 		self.camera = Camera(self);
 		self.camera.focus = True;
 
-		print("OpenGL camera initialized.");
+		log("OpenGL camera initialized.");
 
 		# Player.
 		self.player = EntityPlayer("Bolas");
 		self.player.registry(888);
 		self.player.init();
 
-		print("Player ID " + str(self.player.id) + " client initialized.");
+		log("Player ID " + str(self.player.id) + " client initialized.");
 
 		# World.
 		self.world = World(self);
 		self.world.add(self.player);
 
-		print("Dev world initialized.");
+		log("Dev world initialized.");
 
 		# O skybox e iniciado aqui, porem... eu modifico no meio do jogo.
-		self.skybox = Skybox("textures/skybox/");
+		self.skybox = Skybox("textures/blocks/dirty/dirty_ISSUE");
 		self.skybox.init();
 
-		print("Render stuff initialized.");
+		# The batch for render all and font for draw texts on game.
+		self.batch = pyglet.graphics.Batch();
+		self.font_renderer = FontRenderer(self.batch, "Arial", 19);
+
+		log("Render stuff initialized.");
 
 		# Controller.
 		self.controller = Controller(self, self.player, self.camera);
 
-		print("Controller initialized.");
+		log("Controller initialized.");
 
 		# Agora e mais bonito pra fazer as guis, em termos tecnicos,
 		# do MinecraftEmPythonkjkjkjkkk nao era ruim, mas nao era flexivel.
@@ -119,7 +121,6 @@ class Main(pyglet.window.Window):
 		self.delta_time = 0;
 
 		self.no_render_world = False;
-		self.font_renderer = FontRenderer("Verdana", 19);
 
 		self.keys = key.KeyStateHandler();
 		self.window.push_handlers(self.keys);
@@ -239,7 +240,6 @@ if (__name__ == "__main__"):
 
 	@game.window.event
 	def on_draw():
-		game.window.clear();
 		game.render();
 
 	game.init();

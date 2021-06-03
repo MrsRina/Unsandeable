@@ -2,14 +2,16 @@ from pyglet.gl import *;
 
 import pyglet.gl as GL11;
 import pyglet;
+import pygame;
 import math;
 
 # Created by Rina, sim eu criei isso, na verdade, tudo que foi escrito nesse projeto e genuinamente meu.
 class FontRenderer(object):
-	def __init__(self, font = None, size = None):
+	def __init__(self, batch, font = None, size = None):
 		self.path  = font;
 		self.size  = size;
-		self.font = font;
+		self.font  = font;
+		self.batch = batch;
 
 		self.cfont = None;
 
@@ -18,53 +20,32 @@ class FontRenderer(object):
 		except:
 			self.cfont = pyglet.font.load(self.path, self.size);
 
-		self.label = pyglet.text.Label("", font_name = self.font, font_size = self.size);
+	def get_width(self, string):
+		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_width;
 
-	def get_width(self, string = None):
-		if string is None:
-			return self.label.content_width;
-		else:
-			return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_width;
-
-	def get_height(self):
-		return self.label.content_height;
+	def get_height(self, string):
+		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_height;
 
 	def render(self, text, x, y, color):
-		self.label.text = text;
-		self.label.x = x;
-		self.label.y = y;
-		self.color = color;
+		label = pyglet.text.Label(text, font_name = self.font, font_size = self.size, batch = self.batch);
+		label.text = text;
+		label.x = x;
+		label.y = y;
+		label.color = color;
+		label.anchor_y = "bottom";
 
-		self.label.draw();
+		GL11.glPushMatrix();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-		#GL11.glPushMatrix();
-#
-		#id = GL11.glGenTextures(1);
-#
-		#GL11.glEnable(GL11.GL_BLEND);
-		#GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-#
-		#GL11.glEnable(GL11.GL_TEXTURE_2D);
-		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
-#
-		#GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
-		#GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
-#
-		#GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);		
-#
-		#GL11.glColor(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0, color[3] / 255.0);
-		#GL11.glBegin(GL11.GL_QUADS);
-		#GL11.glTexCoord(0, 0); GL11.glVertex(x, y, 0);
-		#GL11.glTexCoord(0, 1); GL11.glVertex(x, y + height, 0);
-		#GL11.glTexCoord(1, 1); GL11.glVertex(x + width, y + height, 0);
-		#GL11.glTexCoord(1, 0); GL11.glVertex(x + width, y, 0);
-		#GL11.glEnd();
-#
-		#GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-		#GL11.glDisable(GL11.GL_BLEND);
-		#GL11.glDisable(GL11.GL_TEXTURE_2D);
-#
-		#GL11.glPopMatrix();
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
+		label.draw();
+
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glPopMatrix();
 
 class GameRenderGL:
 	def convert_to_texture(surface):

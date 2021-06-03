@@ -4,6 +4,13 @@ from pyglet.window import key;
 import pyglet;
 import math;
 
+def log(type, txt = None):
+	if txt is None:
+		txt = type;
+		type = "Main";
+
+	print("[" + type + "] " + txt);
+
 class Data:
 	def __init__(self, context):
 		self.context = context;

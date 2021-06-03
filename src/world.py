@@ -1,5 +1,5 @@
 from util import GameRenderGL, Vec;
-from api import Face, Data;
+from api import Face, Data, log;
 
 import pyglet.gl as GL11;
 import pygame;
@@ -24,8 +24,12 @@ class Skybox:
 
 			try:
 				self.textures[sides] = GameRenderGL.convert_to_texture(pygame.image.load(file_path + ".png"));
-			except:
+			except Exception as exc:
+				log("Skybox", str(exc));
+
 				self.no_render = True;
+
+				break;
 
 		if self.no_render:
 			return
@@ -135,6 +139,8 @@ class Skybox:
 		GL11.glCallList(self.list);
 		GL11.glColor(1, 1, 1);
 		GL11.glPopMatrix();
+
+		print("jid")
 
 class Block:
 	def __init__(self, x, y, z):
