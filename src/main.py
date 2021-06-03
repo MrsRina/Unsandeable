@@ -97,6 +97,9 @@ class Main(pyglet.window.Window):
 			self.window.set_width(self.screen_width);
 			self.window.set_height(self.screen_height);
 
+	def set_fps(self):
+		pass
+
 	def init(self):
 		self.running = True;
 
@@ -180,7 +183,7 @@ class Main(pyglet.window.Window):
 				self.game_gui.open("GamePaused");
 
 	def update(self, dt):
-		self.partial_ticks = 2;
+		self.partial_ticks = dt * self.fps;
 
 		self.keyboard(self.keys);
 
@@ -241,7 +244,7 @@ if (__name__ == "__main__"):
 
 	game.init();
 
-	GameRenderGL.setup(game);
-
 	pyglet.clock.schedule_interval(game.update, 1.0 / game.fps);
+
+	GameRenderGL.setup(game);
 	pyglet.app.run();

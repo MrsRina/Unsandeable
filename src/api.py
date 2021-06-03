@@ -216,12 +216,12 @@ class Camera:
 	def update(self):
 		GameRenderGL.identity();
 		GameRenderGL.rotate(-self.pitch, 1, 0, 0)
-		GameRenderGL.rotate(self.yaw, 0, 1, 0);
+		GameRenderGL.rotate(360 - self.yaw, 0, 1, 0);
 		GameRenderGL.position(-self.position.x, -self.position.y, -self.position.z);
 
 	def update_mouse(self):
 		if self.focus:
-			self.yaw += (self.main.rel[0]) * self.speed_mouse_sensivity;
+			self.yaw -= (self.main.rel[0]) * self.speed_mouse_sensivity;
 			self.pitch += (self.main.rel[1]) * self.speed_mouse_sensivity;
 
 		self.main.window.set_exclusive_mouse(self.focus);
