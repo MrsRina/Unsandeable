@@ -1,4 +1,4 @@
-from util import GameRenderGL, Vec;
+from util import GameRenderGL, Vec, BatchHelper;
 from api import Face, Data, log;
 
 import pyglet.gl as GL11;
@@ -59,25 +59,26 @@ class Block:
 
 	def init(self):
 		self.flag.registry("type", "air");
+		self.flag.registry("texture", "air");
 
 	def set_type(self, type):
-		loaded = True;
+		if self.flag.get("type") != type:
+			self.flag.set("type", type);
 
-		for i in range(0, len(flag.FACES)):
-			sides = flag.FACES[i];
-
-			pass
+	def set_texture(self, texture):
+		self.flag.set("texture", texture);
 
 	def get_type(self):
 		return self.flag.get("type");
+
+	def get_texture(self):
+		return self.flag.get("texture");
 
 	def update(self):
 		pass
 
 	def render(self, batch):
 		if self.get_type() == "air":
-			GameRenderGL.render_block(batch, self.x, self.y, self.z, self.w, self.h, self.l, self.color);
-
 			return;
 
 class World:
@@ -87,10 +88,12 @@ class World:
 		self.entity_list = {};
 		self.loaded_chunk = {};
 		self.loaded_block = {};
+
 		self.seed = 0;
 		self.time = 0;
 
 		self.batch = pyglet.graphics.Batch();
+		self.group = pyglet.graphics.Group();
 
 	def load_chunk_dirty(self, length, y):
 		for x in range(-length, length):
@@ -99,8 +102,7 @@ class World:
 
 				dirty.init();
 				dirty.set_type("dirty");
-
-				GameRenderGL.render_block(self.batch, x, y, z, 1, 1, 1, 1);
+				dirty.refresh();
 
 				self.loaded_block[(z, y, z)] = dirty;
 				self.loaded_chunk[dirty] = [x, y, z];
@@ -133,6 +135,15 @@ class World:
 			self.entity_list[ids].update(delta_time);
 
 		for block_positions in self.loaded_block:
-			self.loaded_block[block_positions].update();
+			blocks = self.loaded_block[block_positions];
+			blocks.update();
+
+			if blocks.get_type() is not blocks.get_texture():
+				if blocks.get_type() == "air":
+					BatchHelper.apply_cube_without_texture(self.batch, blocks.x, blocks.y, blocks.z, 0.5, 0.5, 0.5, (255, 255, 255, 255));
+				else:
+					BatchHelper.apply_cube(self.batch, self.group, , blocks.x, blocks.y, blocks.z, 0.5, 0.5, 0.5, (255, 255, 255, 255));
+
+				blocks.set_texture(blocks.get_type());
 
 		skybox.update();

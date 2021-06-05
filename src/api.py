@@ -15,6 +15,8 @@ def log(type, txt = None):
 class TextureManager:
 	def __init__(self, main):
 		self.textures = {};
+		self.groups = {};
+
 		self.main = main;
 
 	def init(self):
@@ -38,6 +40,7 @@ class TextureManager:
 			return;
 
 		self.textures[tag] = texture_data;
+		self.groups[tag] = pyglet.graphics.TextureGroup(texture_data);
 
 	def get(self, tag):
 		texture = None;

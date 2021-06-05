@@ -48,99 +48,40 @@ class FontRenderer(object):
 		GL11.glDisable(GL11.GL_BLEND);
 		GL11.glPopMatrix();
 
-class GameRenderGL:
-	def convert_to_texture(surface):
-		w = surface.get_width();
-		h = surface.get_height();
+class BatchHelper:
+	def group_texture(surface):
+		return surface;
 
-		data    = pygame.image.tostring(surface, "RGBA", 1);
-		texture = GL11.glGenTextures(1);
-
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
-		GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-		GL11.glTexEnvf(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, GL11.GL_MODULATE);
-
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP_TO_EDGE);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP_TO_EDGE);
-
-		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, w, h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
-
-		return texture;
-
-	def render_block(batch, x, y, z, w, h, l, color):
-		X, Y, Z = x+1, y+1, z+1
+	def apply_cube_without_texture(batch, x, y, z, width, height, lenght, color):
+		w, h, z = x + width, y + height, z + lenght;
 
 		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
 
-		batch.add(4, GL_QUADS, None, ('v3f', (X, y, z,  x, y, z,  x, Y, z,  X, Y, z)), tex_coords) # back
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, Z,  X, y, Z,  X, Y, Z,  x, Y, Z)), tex_coords) # front
+		batch.add(4, GL_QUADS, None, ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords) # back
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords) # front
 
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  x, y, Z,  x, Y, Z,  x, Y, z)), tex_coords)  # left
-		batch.add(4, GL_QUADS, None, ('v3f', (X, y, Z,  X, y, z,  X, Y, z,  X, Y, Z)), tex_coords)  # right
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords)  # left
+		batch.add(4, GL_QUADS, None, ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords)  # right
 
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
-		batch.add(4, GL_QUADS, None, ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
-	
-		# GL11.glPushMatrix();
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords)  # bottom
+		batch.add(4, GL_QUADS, None, ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
 
-		# GL11.glBegin(GL11.GL_QUADS);
-		# GL11.glVertex3f(x, y, z + l);
-		# GL11.glVertex3f(x, y + h, z + l);
-		# GL11.glVertex3f(x + w, y + h, z + l);
-		# GL11.glVertex3f(x + w, y, z + l);
-		# GL11.glEnd();
+	def apply_cube(batch, group, textures, x, y, z, width, height, lenght, color):
+		w, h, z = x + width, y + height, z + lenght;
 
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		# GL11.glBegin(GL11.GL_QUADS);
+		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
 
-		# GL11.glVertex3f(x + w, y, z);
-		# GL11.glVertex3f(x + w, y + h, z);
-		# GL11.glVertex3f(x, y + h, z);
-		# GL11.glVertex3f(x, y, z);
-		# GL11.glEnd();
+		batch.add(4, GL_QUADS, group, ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords) # back
+		batch.add(4, GL_QUADS, group, ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords) # front
 
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		# GL11.glBegin(GL11.GL_QUADS);
+		batch.add(4, GL_QUADS, group, ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords)  # left
+		batch.add(4, GL_QUADS, group, ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords)  # right
 
-		# GL11.glVertex3f(x, y + h, z);
-		# GL11.glVertex3f(x, y + h, z + l);
-		# GL11.glVertex3f(x, y, z + l);
-		# GL11.glVertex3f(x, y, z);
-		# GL11.glEnd();
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords)  # bottom
+		batch.add(4, GL_QUADS, None, ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
 
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		# GL11.glBegin(GL11.GL_QUADS);
 
-		# GL11.glVertex3f(x + w, y, z);
-		# GL11.glVertex3f(x + w, y, z + l);
-		# GL11.glVertex3f(x + w, y + h, z + l);
-		# GL11.glVertex3f(x + w, y + h, z);
-		# GL11.glEnd();
-
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		# GL11.glBegin(GL11.GL_QUADS);
-
-		# GL11.glVertex3f(x + w, y + h, z);
-		# GL11.glVertex3f(x + w, y + h, z + l);
-		# GL11.glVertex3f(x, y + h, z + l);
-		# GL11.glVertex3f(x, y + h, z);
-		# GL11.glEnd();
-
-		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		# GL11.glBegin(GL11.GL_QUADS);
-
-		# GL11.glVertex3f(x, y, z);
-		# GL11.glVertex3f(x, y, z + l);
-		# GL11.glVertex3f(x + w, y, z + l);
-		# GL11.glVertex3f(x + w, y, z);
-		# GL11.glEnd();
-
-		# GL11.glPopMatrix();
-
+class GameRenderGL:
 	def position(x, y = None, z = None):
 		if y is None and z is None:
 			GL11.glTranslatef(x.x, x.y, x.z);
