@@ -188,23 +188,29 @@ class Main(pyglet.window.Window):
 				self.game_gui.open("GamePaused");
 
 	def update(self, dt):
-		self.partial_ticks = dt + self.timer;
-
 		self.keyboard(self.keys);
 
+		# Eu nao sei trabalhar com esse sistema de dt do pyglet... eu fiz um timer pra isso.
+		self.partial_ticks = dt + self.timer;
+
+		# Update de camera pode ficar aqui, mas vou mudar no futuro.
 		self.camera.focus = self.game_gui.current_gui is None;
 		self.camera.speed_mouse_sensivity = self.game_settings.setting_in_game.value("mouse-sensivity");
 
+		# Isso tambem vou mudar.
 		self.window.set_exclusive_mouse(self.camera.focus);
 		self.window.set_mouse_visible(self.camera.focus is not True);
 
 		if self.game_gui.current_gui is not None and self.game_gui.current_gui.active is False:
 			self.game_gui.current_gui = None;
 
+		# Nao sei ainda como salvar um world, posso usar json pra isso, ah sei la.
+		# Vamos fazer funcionar primeiro pra depois pensar em algo.
 		if self.world is not None:
 			self.world.update(self.skybox);
 			self.controller.update();
 
+# 	O CODIGO AQUI E BAIXO E HORRIVEL, EU TNEHO QUE QUSFAZER BONITO SE NAO EU PULO DA CAMA.
 if (__name__ == "__main__"):
 	# bo a noit;l
 	game = Main();
