@@ -4,12 +4,48 @@ from pyglet.window import key;
 import pyglet;
 import math;
 
+# Shows problem on game, infos or warings using log system.
 def log(type, txt = None):
 	if txt is None:
 		txt = type;
 		type = "Main";
 
 	print("[" + type + "] " + txt);
+
+class TextureManager:
+	def __init__(self, main):
+		self.textures = {};
+		self.main = main;
+
+	def init(self):
+		self.load("block_dirty_up", "textures/blocks/dirty/dirty_up.png");
+		self.load("block_dirty_down", "textures/blocks/dirty/dirty_down.png");
+		self.load("block_dirty_back", "textures/blocks/dirty/dirty_sides.png");
+		self.load("block_dirty_front", "textures/blocks/dirty/dirty_sides.png");
+		self.load("block_dirty_left", "textures/blocks/dirty/dirty_sides.png");
+		self.load("block_dirty_right", "textures/blocks/dirty/dirty_sides.png");
+
+		self.load("skybox_up", "NOT_DONE");
+
+	def load(self, tag, path):
+		texture_data = None;
+
+		try:
+			texture_data = pyglet.image.load(path);
+		except Exception as exc:
+			log("TextureManager", "Exception on load texture: " + str(exc));
+
+			return;
+
+		self.textures[tag] = texture_data;
+
+	def get(self, tag):
+		texture = None;
+
+		if self.textures.__contains__(tag):
+			texture = self.textures[tag];
+
+		return texture;
 
 class Data:
 	def __init__(self, context):
@@ -222,17 +258,14 @@ class Camera:
 
 	def update(self):
 		GameRenderGL.identity();
-		GameRenderGL.rotate(-self.pitch, 1, 0, 0)
+		GameRenderGL.rotate(self.pitch, 1, 0, 0)
 		GameRenderGL.rotate(360 - self.yaw, 0, 1, 0);
 		GameRenderGL.position(-self.position.x, -self.position.y, -self.position.z);
 
 	def update_mouse(self):
 		if self.focus:
 			self.yaw -= (self.main.rel[0]) * self.speed_mouse_sensivity;
-			self.pitch += (self.main.rel[1]) * self.speed_mouse_sensivity;
-
-		self.main.window.set_exclusive_mouse(self.focus);
-		self.main.window.set_mouse_visible(self.focus is not True);
+			self.pitch += -(self.main.rel[1]) * self.speed_mouse_sensivity;
 
 		if self.pitch >= 90:
 			self.pitch = 90;

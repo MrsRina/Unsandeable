@@ -1,5 +1,5 @@
 # Sim api.
-from api import GameSetting, GameGui, Camera, Controller, log;
+from api import GameSetting, GameGui, Camera, Controller, log, TextureManager;
 from util import GameRenderGL, FontRenderer;
 from entity import EntityPlayer;
 from world import World, Skybox;
@@ -39,6 +39,11 @@ class Main(pyglet.window.Window):
 
 		log("Created window.");
 
+		self.texture_manager = TextureManager(self);
+		self.texture_manager.init();
+
+		log("Textures initialized.");
+
 		# Meu crush esse game gui.
 		self.game_gui = GameGui(self);
 		self.game_gui.init();
@@ -70,7 +75,7 @@ class Main(pyglet.window.Window):
 
 		# The batch for render all and font for draw texts on game.
 		self.batch = pyglet.graphics.Batch();
-		self.font_renderer = FontRenderer(self.batch, "Arial", 19);
+		self.font_renderer = FontRenderer(self, self.batch, "Arial", 19);
 
 		log("Render stuff initialized.");
 
@@ -115,6 +120,7 @@ class Main(pyglet.window.Window):
 		self.background = [190, 190, 190];
 
 		self.fps = 60;
+		self.timer = 0.175;
 		self.partial_ticks = 1;
 
 		self.last_delta_time = 0;
@@ -159,8 +165,6 @@ class Main(pyglet.window.Window):
 
 	def do_world_render(self):
 		if self.world is not None:
-			GameRenderGL.render_block(0, 0, 0, 1, 1, 1, [255, 255, 255, 255])
-
 			self.world.render(self.skybox);
 
 	def do_overlay_render(self):
@@ -184,12 +188,15 @@ class Main(pyglet.window.Window):
 				self.game_gui.open("GamePaused");
 
 	def update(self, dt):
-		self.partial_ticks = dt * self.fps;
+		self.partial_ticks = dt + self.timer;
 
 		self.keyboard(self.keys);
 
 		self.camera.focus = self.game_gui.current_gui is None;
 		self.camera.speed_mouse_sensivity = self.game_settings.setting_in_game.value("mouse-sensivity");
+
+		self.window.set_exclusive_mouse(self.camera.focus);
+		self.window.set_mouse_visible(self.camera.focus is not True);
 
 		if self.game_gui.current_gui is not None and self.game_gui.current_gui.active is False:
 			self.game_gui.current_gui = None;
@@ -244,7 +251,7 @@ if (__name__ == "__main__"):
 
 	game.init();
 
-	pyglet.clock.schedule_interval(game.update, 1.0 / game.fps);
+	pyglet.clock.schedule(game.update);
 
 	GameRenderGL.setup(game);
 	pyglet.app.run();

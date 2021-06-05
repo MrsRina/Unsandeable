@@ -7,11 +7,12 @@ import math;
 
 # Created by Rina, sim eu criei isso, na verdade, tudo que foi escrito nesse projeto e genuinamente meu.
 class FontRenderer(object):
-	def __init__(self, batch, font = None, size = None):
+	def __init__(self, main, batch, font = None, size = None):
 		self.path  = font;
 		self.size  = size;
 		self.font  = font;
 		self.batch = batch;
+		self.main  = main;
 
 		self.cfont = None;
 
@@ -30,7 +31,7 @@ class FontRenderer(object):
 		label = pyglet.text.Label(text, font_name = self.font, font_size = self.size, batch = self.batch);
 		label.text = text;
 		label.x = x;
-		label.y = y;
+		label.y = self.main.screen_height - y; # sei la e invertido aquik
 		label.color = color;
 		label.anchor_y = "bottom";
 
@@ -69,63 +70,76 @@ class GameRenderGL:
 
 		return texture;
 
-	def render_block(x, y, z, w, h, l, color):
-		GL11.glPushMatrix();
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+	def render_block(batch, x, y, z, w, h, l, color):
+		X, Y, Z = x+1, y+1, z+1
 
-		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glVertex3f(x, y, z + l);
-		GL11.glVertex3f(x, y + h, z + l);
-		GL11.glVertex3f(x + w, y + h, z + l);
-		GL11.glVertex3f(x + w, y, z + l);
-		GL11.glEnd();
+		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
 
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
+		batch.add(4, GL_QUADS, None, ('v3f', (X, y, z,  x, y, z,  x, Y, z,  X, Y, z)), tex_coords) # back
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, Z,  X, y, Z,  X, Y, Z,  x, Y, Z)), tex_coords) # front
 
-		GL11.glVertex3f(x + w, y, z);
-		GL11.glVertex3f(x + w, y + h, z);
-		GL11.glVertex3f(x, y + h, z);
-		GL11.glVertex3f(x, y, z);
-		GL11.glEnd();
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  x, y, Z,  x, Y, Z,  x, Y, z)), tex_coords)  # left
+		batch.add(4, GL_QUADS, None, ('v3f', (X, y, Z,  X, y, z,  X, Y, z,  X, Y, Z)), tex_coords)  # right
 
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
+		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
+		batch.add(4, GL_QUADS, None, ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
+	
+		# GL11.glPushMatrix();
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
 
-		GL11.glVertex3f(x, y + h, z);
-		GL11.glVertex3f(x, y + h, z + l);
-		GL11.glVertex3f(x, y, z + l);
-		GL11.glVertex3f(x, y, z);
-		GL11.glEnd();
+		# GL11.glBegin(GL11.GL_QUADS);
+		# GL11.glVertex3f(x, y, z + l);
+		# GL11.glVertex3f(x, y + h, z + l);
+		# GL11.glVertex3f(x + w, y + h, z + l);
+		# GL11.glVertex3f(x + w, y, z + l);
+		# GL11.glEnd();
 
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		# GL11.glBegin(GL11.GL_QUADS);
 
-		GL11.glVertex3f(x + w, y, z);
-		GL11.glVertex3f(x + w, y, z + l);
-		GL11.glVertex3f(x + w, y + h, z + l);
-		GL11.glVertex3f(x + w, y + h, z);
-		GL11.glEnd();
+		# GL11.glVertex3f(x + w, y, z);
+		# GL11.glVertex3f(x + w, y + h, z);
+		# GL11.glVertex3f(x, y + h, z);
+		# GL11.glVertex3f(x, y, z);
+		# GL11.glEnd();
 
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		# GL11.glBegin(GL11.GL_QUADS);
 
-		GL11.glVertex3f(x + w, y + h, z);
-		GL11.glVertex3f(x + w, y + h, z + l);
-		GL11.glVertex3f(x, y + h, z + l);
-		GL11.glVertex3f(x, y + h, z);
-		GL11.glEnd();
+		# GL11.glVertex3f(x, y + h, z);
+		# GL11.glVertex3f(x, y + h, z + l);
+		# GL11.glVertex3f(x, y, z + l);
+		# GL11.glVertex3f(x, y, z);
+		# GL11.glEnd();
 
-		GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
-		GL11.glBegin(GL11.GL_QUADS);
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		# GL11.glBegin(GL11.GL_QUADS);
 
-		GL11.glVertex3f(x, y, z);
-		GL11.glVertex3f(x, y, z + l);
-		GL11.glVertex3f(x + w, y, z + l);
-		GL11.glVertex3f(x + w, y, z);
-		GL11.glEnd();
+		# GL11.glVertex3f(x + w, y, z);
+		# GL11.glVertex3f(x + w, y, z + l);
+		# GL11.glVertex3f(x + w, y + h, z + l);
+		# GL11.glVertex3f(x + w, y + h, z);
+		# GL11.glEnd();
 
-		GL11.glPopMatrix();
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		# GL11.glBegin(GL11.GL_QUADS);
+
+		# GL11.glVertex3f(x + w, y + h, z);
+		# GL11.glVertex3f(x + w, y + h, z + l);
+		# GL11.glVertex3f(x, y + h, z + l);
+		# GL11.glVertex3f(x, y + h, z);
+		# GL11.glEnd();
+
+		# GL11.glColor3d(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+		# GL11.glBegin(GL11.GL_QUADS);
+
+		# GL11.glVertex3f(x, y, z);
+		# GL11.glVertex3f(x, y, z + l);
+		# GL11.glVertex3f(x + w, y, z + l);
+		# GL11.glVertex3f(x + w, y, z);
+		# GL11.glEnd();
+
+		# GL11.glPopMatrix();
 
 	def position(x, y = None, z = None):
 		if y is None and z is None:
@@ -171,7 +185,7 @@ class GameRenderGL:
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 
-		gluOrtho2D(0, main.screen_width, main.screen_height, 0);
+		gluOrtho2D(0, main.screen_width, 0, main.screen_height);
 	
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 		GL11.glLoadIdentity();
