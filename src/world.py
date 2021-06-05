@@ -112,19 +112,19 @@ class World:
 		if self.entity_list.__contains__(id):
 			del self.entity_list[id];
 
-	def get(self, id):
+	def get_entity(self, id):
 		if self.entity_list.__contains__(id):
 			return self.entity_list[id];
 
 		return None;
 
+	def get_block(self, x, y, z):
+		if (self.loaded_block.__contains__((x, y, z))):
+			return self.loaded_block[(x, y, z)];
+
 	def render(self, skybox):
-		for b in self.loaded_chunk:
-			blocks = self.loaded_chunk[b];
-
-
-		self.batch.draw();
 		skybox.render();
+		self.batch.draw();
 
 	def update(self, skybox):
 		delta_time = self.main.partial_ticks;
@@ -132,7 +132,7 @@ class World:
 		for ids in self.entity_list:
 			self.entity_list[ids].update(delta_time);
 
-		#for blocks in self.loaded_block:
-		#	blocks.update();
+		for block_positions in self.loaded_block:
+			self.loaded_block[block_positions].update();
 
 		skybox.update();
