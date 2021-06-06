@@ -56,6 +56,7 @@ class Block:
 
 		self.color = [0, 0, 0, 100];
 		self.textures = {};
+		self.groups = {};
 
 	def init(self):
 		self.flag.registry("type", "air");
@@ -73,6 +74,23 @@ class Block:
 
 	def get_texture(self):
 		return self.flag.get("texture");
+
+	def refresh(self, texture_manager):
+		if self.get_type() == "air":
+			return;
+
+		self.textures = {};
+		self.groups = {};
+
+		for faces in flag.FACES:
+			data = texture_manager.get("block_" + self.get_type() + "_" + faces);
+
+			texture = data[0];
+			group = data[1];
+
+			if texture is not None and group is not None:
+				self.textures[faces] = texture;
+				self.groups[faces] = group;
 
 	def update(self):
 		pass
@@ -95,17 +113,28 @@ class World:
 		self.batch = pyglet.graphics.Batch();
 		self.group = pyglet.graphics.Group();
 
-	def load_chunk_dirty(self, length, y):
-		for x in range(-length, length):
-			for z in range(-length, length):
+	def load_chunk_dirty(self, r, l):
+		length = int(r);
+		y = int(l);
+
+		x = -length;
+		z = -length;
+
+		for counter_x in range(-length, length):
+			for counter_z in range(-length, length):
 				dirty = Block(x, y, z);
 
 				dirty.init();
 				dirty.set_type("dirty");
-				dirty.refresh();
+				dirty.refresh(self.main.texture_manager);
 
-				self.loaded_block[(z, y, z)] = dirty;
+				log("" + str(dirty.x));
+
+				self.loaded_block[dirty] = dirty;
 				self.loaded_chunk[dirty] = [x, y, z];
+
+				z += 0.5;
+			x += 0.5;
 
 	def add(self, entity):
 		self.entity_list[entity.id] = entity;
@@ -142,7 +171,9 @@ class World:
 				if blocks.get_type() == "air":
 					BatchHelper.apply_cube_without_texture(self.batch, blocks.x, blocks.y, blocks.z, 0.5, 0.5, 0.5, (255, 255, 255, 255));
 				else:
-					BatchHelper.apply_cube(self.batch, self.group, , blocks.x, blocks.y, blocks.z, 0.5, 0.5, 0.5, (255, 255, 255, 255));
+					blocks.refresh(self.main.texture_manager);
+
+					BatchHelper.apply_cube(self.batch, blocks.groups, blocks.textures, blocks.x, blocks.y, blocks.z, 0.5, 0.5, 0.5, (255, 255, 255, 255));
 
 				blocks.set_texture(blocks.get_type());
 

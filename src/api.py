@@ -40,15 +40,17 @@ class TextureManager:
 			return;
 
 		self.textures[tag] = texture_data;
-		self.groups[tag] = pyglet.graphics.TextureGroup(texture_data);
+		self.groups[tag] = pyglet.graphics.TextureGroup(texture_data.get_texture());
 
 	def get(self, tag):
 		texture = None;
+		group = None;
 
-		if self.textures.__contains__(tag):
+		if self.textures.__contains__(tag) and self.groups.__contains__(tag):
 			texture = self.textures[tag];
+			group = self.groups[tag];
 
-		return texture;
+		return [texture, group];
 
 class Data:
 	def __init__(self, context):
