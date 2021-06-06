@@ -70,7 +70,7 @@ class Data:
 
 	def remove(self, value_name):
 		if self.data.__contains__(value_name):
-			del self.data[value_name];
+			self.data.pop(value_name);
 
 class Setting:
 	def __init__(self, name):
@@ -86,7 +86,7 @@ class Setting:
 
 	def remove(self, value_name):
 		if self.data.__contains__(value_name):
-			del self.data[value_name];
+			self.data.pop(value_name);
 
 class GameSetting:
 	def __init__(self, main):
@@ -97,6 +97,7 @@ class GameSetting:
 		self.setting_fullscreen = Setting("fullscreen");
 		self.setting_fov = Setting("fov");
 		self.setting_in_game = Setting("ingame");
+		self.setting_render = Setting("render");
 
 	def init(self):
 		# Basic fullscreen stuff setting.
@@ -118,10 +119,14 @@ class GameSetting:
 		self.setting_in_game.value("move-jump", key.SPACE);
 		self.setting_in_game.value("move-crouch", key.LSHIFT);
 
+		# Render settings.
+		self.setting_render.value("chunk-distance", 12);
+
 		# Registry all settings.
 		self.registry(self.setting_fullscreen);
 		self.registry(self.setting_fov);
 		self.registry(self.setting_in_game);
+		self.registry(self.setting_render);
 
 	def registry(self, setting):
 		self.settings.append(setting);

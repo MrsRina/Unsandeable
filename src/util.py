@@ -51,34 +51,29 @@ class BatchHelper:
 	def group_texture(surface):
 		return surface;
 
-	def apply_cube_without_texture(batch, x, y, z, width, height, lenght, color):
-		w, h, z = x + width, y + height, z + lenght;
+	def remove_cube(batch_list, vertex_list):
+		for vertexs in batch_list[vertex_list]:
+			vertexs.delete();
 
-		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
-
-		batch.add(4, GL_QUADS, None, ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords) # back
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords) # front
-
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords)  # left
-		batch.add(4, GL_QUADS, None, ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords)  # right
-
-		batch.add(4, GL_QUADS, None, ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords)  # bottom
-		batch.add(4, GL_QUADS, None, ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
+		batch_list.pop(vertex_list);
 
 	def apply_cube(batch, groups, textures, x, y, z, width, height, lenght, color):
 		w, h, l = x + width, y + height, z + lenght;
 
-		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
+		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1));
 
-		batch.add(4, GL_QUADS, groups["back"], ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords) # back
-		batch.add(4, GL_QUADS, groups["front"], ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords) # front
+		vertex_list = [
+			batch.add(4, GL_QUADS, groups["back"], ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords), # back
+			batch.add(4, GL_QUADS, groups["front"], ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords), # front
+	
+			batch.add(4, GL_QUADS, groups["left"], ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords),  # left
+			batch.add(4, GL_QUADS, groups["right"], ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords),  # right
+	
+			batch.add(4, GL_QUADS, groups["down"], ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords),  # bottom
+			batch.add(4, GL_QUADS, groups["up"], ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
+		];
 
-		batch.add(4, GL_QUADS, groups["left"], ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords)  # left
-		batch.add(4, GL_QUADS, groups["right"], ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords)  # right
-
-		batch.add(4, GL_QUADS, groups["down"], ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords)  # bottom
-		batch.add(4, GL_QUADS, groups["up"], ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
-
+		return vertex_list;
 
 class GameRenderGL:
 	def position(x, y = None, z = None):
@@ -104,6 +99,9 @@ class GameRenderGL:
 
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST)
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST)
+
+		GL11.glEnable(GL11.GL_BLEND)
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
 		GameRenderGL.world(main);
 
@@ -232,3 +230,13 @@ class Math:
 
 	def interpolation_linear(last, value, ticks):
 		return last + (value - last) * ticks;
+
+	def block_collide(block, x, y, z):
+		return x >= block.x and y >= block.y and z >= block.z and x <= block.x + block.w and y <= block.y + block.h and z <= block.z + block.l;
+
+	def block_distance(block, x, y, z):
+		diff_x = (block.x + block.w) - x;
+		diff_y = (block.y + block.h) - y;
+		diff_z = (block.z + block.l) - z;
+
+		return math.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
