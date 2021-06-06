@@ -2,7 +2,6 @@ from pyglet.gl import *;
 
 import pyglet.gl as GL11;
 import pyglet;
-import pygame;
 import math;
 
 # Created by Rina, sim eu criei isso, na verdade, tudo que foi escrito nesse projeto e genuinamente meu.
@@ -102,7 +101,13 @@ class GameRenderGL:
 
 	def setup(main):
 		GL11.glClearDepth(1);
+
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST)
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST)
+
 		GameRenderGL.world(main);
+
+		GL11.glEnable(GL11.GL_CULL_FACE);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 
 	def world(main):

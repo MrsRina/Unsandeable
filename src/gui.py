@@ -1,7 +1,7 @@
 from api import Gui;
 from util import Math;
 
-import pygame;
+import pyglet;
 import flag;
 
 class GamePaused(Gui):
@@ -34,7 +34,7 @@ class InitializingPosOpenGameGui(Gui):
 		self.start_close = True;
 
 	def on_key_event(self, key, state):
-		if key == pygame.K_SPACE:
+		if key == pyglet.window.key.SPACE:
 			self.process_game_join();
 
 	def on_close(self):

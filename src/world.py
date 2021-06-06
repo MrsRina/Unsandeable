@@ -3,7 +3,6 @@ from api import Face, Data, log;
 
 import pyglet.gl as GL11;
 import pyglet;
-import pygame;
 import flag;
 import os;
 
@@ -117,24 +116,16 @@ class World:
 		length = int(r);
 		y = int(l);
 
-		x = -length;
-		z = -length;
-
-		for counter_x in range(-length, length):
-			for counter_z in range(-length, length):
-				dirty = Block(x, y, z);
+		for x in range(-length, length):
+			for z in range(-length, length):
+				dirty = Block(x - 0.5, y, z - 0.5);
 
 				dirty.init();
 				dirty.set_type("dirty");
 				dirty.refresh(self.main.texture_manager);
 
-				log("" + str(dirty.x));
-
 				self.loaded_block[dirty] = dirty;
-				self.loaded_chunk[dirty] = [x, y, z];
-
-				z += 0.5;
-			x += 0.5;
+				self.loaded_chunk[dirty] = [dirty.x, dirty.y, dirty.z];
 
 	def add(self, entity):
 		self.entity_list[entity.id] = entity;
