@@ -99,23 +99,34 @@ class Block:
 				self.textures[faces] = texture;
 				self.groups[faces] = group;
 
-	def update(self):
-		pass
+	def update(self, camera, chunk_update_distance):
+		if Math.block_collide(self, camera.x, camera.y, camera.z) < chunk_update_distance:
+			self.set_render();
+		else:
+			self.unset_render();
 
 class Chunk:
 	def __init__(self, world):
 		self.world = world;
+		self.position = Vec(0, 0, 0);
+		self.extend = Vec(6, 6, 6);
 
-	def update(self, camera, chunk_update_distance):
-		self.world.add();
+		self.loaded_block = {};
+
+	def add(self, block):
+		if self.loaded_block.__contains__(block) is False:
+			self.loaded_block[block] = block;
+
+	def remove(self, block):
+		if self.loaded_block.__contains__(block):
+			self.loaded_block.pop(block);
 
 class World:
 	def __init__(self, main):
 		self.main = main;
 
-		self.entity_list = {};
-		self.loaded_chunk = {};
-		self.loaded_block = {};
+		self.loaded_chunk = {}; # Vou usar pra salvar todos os blocos do mundo.
+		self.loaded_block = {}; # Todos os chunks do jogo...
 
 		self.seed = 0;
 		self.time = 0;
@@ -124,24 +135,65 @@ class World:
 		self.group = pyglet.graphics.Group();
 
 		self.batch_list = {};
-		self.chunk = Chunk(self);
+		self.entity_list = {};
+		self.chunk_update_list = {}; # O que fica na memoria ram!
 
 	def load_chunk_dirty(self, r, l):
 		length = int(r);
 		y = int(l);
 
+		chunk_size = 24;
+		chunk = None;
+
+		count_x = 0;
+		count_z = 0;
+
 		for x in range(-length, length):
+			count_x += 1;
+
 			for z in range(-length, length):
+				count_z += 1;
+
 				dirty = Block(x - 0.5, y, z - 0.5);
 				dirty.init();
 				dirty.set_type("dirty");
 				dirty.refresh(self.main.texture_manager);
 	
 				self.add_block(dirty);
+
+				if chunk is None or count_x >= chunk_size or count_z >= chunk_size:
+					if count_x >= chunk_size:
+						count_x = 0;
+
+					if count_z >= chunk_size:
+						count_z = 0;
+
+					chunk = Chunk(self);
+
+					chunk.position.x = x - 0.5;
+					chunk.position.z = z - 0.5;
+
+					chunk.extend.x = chunk_size;
+					chunk.extend.y = chunk_size;
+					chunk.extend.z = chunk_size;
+
+					self.add_chunk(chunk);
+					self.chunk_block(dirty, chunk, flag.ADD);
+
 				self.change_block(dirty, "set_vertex");
 
 	def add_block(self, block):
-		self.loaded_block[block] = block;
+		self.loaded_block[(block.x, block.y, block.z)] = block;
+
+	def add_chunk(self, chunk):
+		self.loaded_chunk[chunk] = chunk;
+
+	def chunk_block(self, block, chunk, mode):
+		if mode is flag.ADD and chunk is not None and chunk.loaded_block.__contains__(block) is False:
+			chunk.add(block);
+
+		if mode is flag.REMOVE and chunk is not None and chunk.loaded_block.__contains__(block):
+			chunk.remove(block);
 
 	def change_block(self, block, action):
 		if action is "unset_vertex" and self.batch_list.__contains__(block):
@@ -152,17 +204,23 @@ class World:
 
 		if action is "destroy":
 			self.loaded_block.pop(block);
-			self.loaded_chunk.pop(block);
 
-		if action is "chunk_update_add" and self.loaded_chunk.__contains__(block) is False:
-			log("World", "Detected added chunk update!");
+	def refresh_chunk(self, chunk, action):
+		if action is "remove" and self.chunk_update_list.__contains__(chunk):
+			log("Detected removed chunk update!");
 
-			self.loaded_chunk[block] = block;
+			for blocks in chunk.loaded_block:
+				self.change_block(blocks, "unset_vertex");
 
-		if action is "chunk_update_remove" and self.loaded_chunk.__contains__(block):
-			log("World", "Detected removed chunk update!");
+			self.chunk_update_list.pop(chunk);
 
-			self.loaded_chunk.pop(block);
+		if action is "add" and self.chunk_update_list.__contains__(chunk) is False:
+			log("Detected added chunk update!");
+
+			for blocks in chunk.loaded_block:
+				self.change_block(blocks, "set_vertex");
+
+			self.chunk_update_list[chunk] = chunk;
 
 	def get_block(self, x, y, z):
 		block = None;
@@ -198,16 +256,22 @@ class World:
 		for ids in self.entity_list:
 			self.entity_list[ids].update(delta_time);
 
-		log("" + str(len(self.batch_list)));
-
 		chunk_update_distance = self.main.game_settings.setting_render.value("chunk-distance");
+		camera = self.main.camera.position;
 
-		#self.chunk.update(self.main.camera.position, chunk_update_distance);
+		for (x, y, z) in self.loaded_block:
+			blocks = self.loaded_block[(x, y, z)];
 
-		for blocks in self.loaded_block:
-			if self.loaded_chunk.__contains__(blocks):
-				blocks.update();
-	
+		for chunks in self.loaded_chunk:
+			if Math.object_distance(chunks.position.x, chunks.position.y, chunks.position.z, chunks.extend.x, chunks.extend.y, chunks.extend.z, camera.x, camera.y, camera.z) > chunk_update_distance:
+				self.refresh_chunk(chunks, "remove");
+			else:
+				self.refresh_chunk(chunks, "add");
+
+				log("nigger");
+
+		for chunks in self.chunk_update_list:
+			for blocks in chunks.loaded_block:
 				if blocks.get_type() is not blocks.get_texture():
 					if blocks.get_type() is not "air":
 						blocks.refresh(self.main.texture_manager);

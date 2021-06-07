@@ -137,7 +137,7 @@ class Main(pyglet.window.Window):
 
 		# Abrimos a primeira gui do jogo.
 		self.game_gui.open("InitializingPosOpenGame");
-		self.world.load_chunk_dirty(23, 0);
+		self.world.load_chunk_dirty(12, 0);
 
 	def render(self):
 		GameRenderGL.clear(self);

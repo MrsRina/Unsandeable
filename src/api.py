@@ -120,7 +120,7 @@ class GameSetting:
 		self.setting_in_game.value("move-crouch", key.LSHIFT);
 
 		# Render settings.
-		self.setting_render.value("chunk-distance", 40);
+		self.setting_render.value("chunk-distance", 1);
 
 		# Registry all settings.
 		self.registry(self.setting_fullscreen);
@@ -216,7 +216,7 @@ class Controller:
 	def __init__(self, main, entity, camera):
 		self.main = main;
 		self.entity = entity;
-		self.speed = 1000;
+		self.speed = 200000;
 		self.camera = camera;
 
 	def keyboard(self, keys):
