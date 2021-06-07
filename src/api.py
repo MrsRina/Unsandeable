@@ -221,20 +221,20 @@ class Controller:
 
 	def keyboard(self, keys):
 		if keys[self.main.game_settings.setting_in_game.value("move-forward")]:
-			self.entity.position_linear.x -= Math.moveX(self.camera.yaw) * ((self.speed / 1000) * 0.1);
-			self.entity.position_linear.z -= Math.moveZ(self.camera.yaw) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.x -= Math.move_x(self.camera.yaw) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.z -= Math.move_z(self.camera.yaw) * ((self.speed / 1000) * 0.1);
 
 		if keys[self.main.game_settings.setting_in_game.value("move-backward")]:
-			self.entity.position_linear.x += Math.moveX(self.camera.yaw) * ((self.speed / 1000) * 0.1);
-			self.entity.position_linear.z += Math.moveZ(self.camera.yaw) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.x += Math.move_x(self.camera.yaw) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.z += Math.move_z(self.camera.yaw) * ((self.speed / 1000) * 0.1);
 
 		if keys[self.main.game_settings.setting_in_game.value("move-left")]:
-			self.entity.position_linear.x += Math.moveX(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
-			self.entity.position_linear.z += Math.moveZ(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.x += Math.move_x(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.z += Math.move_z(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
 
 		if keys[self.main.game_settings.setting_in_game.value("move-right")]:
-			self.entity.position_linear.x -= Math.moveX(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
-			self.entity.position_linear.z -= Math.moveZ(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.x -= Math.move_x(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
+			self.entity.position_linear.z -= Math.move_z(self.camera.yaw - 90) * ((self.speed / 1000) * 0.1);
 
 		if keys[self.main.game_settings.setting_in_game.value("move-jump")]:
 			self.entity.do_jump();
@@ -282,3 +282,34 @@ class Camera:
 
 		if self.pitch <= -90:
 			self.pitch = -90;
+
+class Overlay:
+	def __init__(self, tag):
+		self.tag = tag;
+		self.render = True;
+
+	def unset_render(self):
+		self.render = False;
+
+	def set_render(self):
+		self.render = True;
+
+	def draw(self, partial_ticks):
+		pass
+
+class OverlayManager:
+	def __init__(self, main):
+		self.main = main;
+
+	def init(self):
+		self.overlay_list = [];
+
+	def registry(self, overlay):
+		self.overlay_list.append(overlay);
+
+	def render(self):
+		partial_ticks = self.main.partial_ticks;
+
+		for overlay_components in self.overlay_list:
+			if overlay_components.render:
+				overlay_components.draw(partial_ticks);

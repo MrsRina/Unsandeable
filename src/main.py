@@ -1,5 +1,5 @@
 # Sim api.
-from api import GameSetting, GameGui, Camera, Controller, log, TextureManager;
+from api import GameSetting, GameGui, Camera, Controller, log, TextureManager, OverlayManager;
 from util import GameRenderGL, FontRenderer;
 from entity import EntityPlayer;
 from world import World, Skybox;
@@ -7,8 +7,9 @@ from pyglet.window import key;
 from pyglet.gl import *
 
 # Esse flag e do propio jogo, ele e so umas coisas retardadas mesmo.
-import pyglet;
 import pyglet.gl as GL11;
+import overlay;
+import pyglet;
 import flag;
 import gui;
 import sys;
@@ -86,11 +87,20 @@ class Main(pyglet.window.Window):
 
 		log("Controller initialized.");
 
+		# As olverlays do jogo, aonde fica a vida etc.
+		self.overlay_manager = OverlayManager(self);
+		self.overlay_manager.init();
+
+		log("Game overlay initialized.");
+
 		# Agora e mais bonito pra fazer as guis, em termos tecnicos,
 		# do MinecraftEmPythonkjkjkjkkk nao era ruim, mas nao era flexivel.
 		# Nessa versao ficou supreendentemente mais profissional e flexivel.
 		self.game_gui.registry(gui.InitializingPosOpenGameGui(self));
 		self.game_gui.registry(gui.GamePaused(self));
+
+		# Tambem registramos as overlays do jogo.
+		self.overlay_manager.registry(overlay.Debug(self));
 
 		print("Unsandeable v1.0 started! :)!");
 
@@ -171,6 +181,9 @@ class Main(pyglet.window.Window):
 
 	def do_overlay_render(self):
 		self.game_gui.process_render(self.mouse_position_x, self.mouse_position_y, self.partial_ticks);
+
+		if self.world is not None and self.game_gui.current_gui is None:
+			self.overlay_manager.render();
 
 	def mouse_event(self, mx, my, key, state):
 		# Eu to processando assim agora vou ir dormir, isso e otro diakkkkk sao quase 3 horas da manha.

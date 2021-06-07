@@ -223,11 +223,27 @@ class AABB:
 			   (self.min.y >= aabb.min.y and self.max.y <= aabb.max.y) and \
 			   (self.min.z >= aabb.min.z and self.max.z <= aabb.max.z);
 
+class String:
+	def vec_to_string(vec):
+		return String.position_to_string(vec.x, vec.y, vec.z);
+
+	def position_to_string(x, y, z):
+		return "x: " + str((x)) + " y: " + str((y)) + " z: " + str(int(z));
+
+	def len_to_string(list):
+		return str(len(list));
+
+	def object_tagged_to_string(object):
+		try:
+			return object.tag;
+		except:
+			return "";
+
 class Math:
-	def moveX(angle):
+	def move_x(angle):
 		return math.sin(math.radians(angle));
 
-	def moveZ(angle):
+	def move_z(angle):
 		return math.cos(math.radians(angle));
 
 	def clamp(value, minimum, maximum):

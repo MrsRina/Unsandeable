@@ -196,17 +196,17 @@ class World:
 			chunk.remove(block);
 
 	def change_block(self, block, action):
-		if action is "unset_vertex" and self.batch_list.__contains__(block):
+		if action == "unset_vertex" and self.batch_list.__contains__(block):
 			BatchHelper.remove_cube(self.batch_list, block);
 
-		if action is "set_vertex" and self.batch_list.__contains__(block) is False:
+		if action == "set_vertex" and self.batch_list.__contains__(block) is False:
 			self.batch_list[block] = BatchHelper.apply_cube(self.batch, block.groups, block.textures, block.x, block.y, block.z, block.w, block.h, block.l, (255, 255, 255, 255));
 
-		if action is "destroy":
+		if action == "destroy":
 			self.loaded_block.pop(block);
 
 	def refresh_chunk(self, chunk, action):
-		if action is "remove" and self.chunk_update_list.__contains__(chunk):
+		if action == "remove" and self.chunk_update_list.__contains__(chunk):
 			log("Detected removed chunk update!");
 
 			for blocks in chunk.loaded_block:
@@ -214,7 +214,7 @@ class World:
 
 			self.chunk_update_list.pop(chunk);
 
-		if action is "add" and self.chunk_update_list.__contains__(chunk) is False:
+		if action == "add" and self.chunk_update_list.__contains__(chunk) is False:
 			log("Detected added chunk update!");
 
 			for blocks in chunk.loaded_block:
@@ -273,7 +273,7 @@ class World:
 		for chunks in self.chunk_update_list:
 			for blocks in chunks.loaded_block:
 				if blocks.get_type() is not blocks.get_texture():
-					if blocks.get_type() is not "air":
+					if blocks.get_type() != "air":
 						blocks.refresh(self.main.texture_manager);
 						self.change_block(blocks, "set_vertex");
 	
