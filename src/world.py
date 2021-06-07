@@ -102,6 +102,13 @@ class Block:
 	def update(self):
 		pass
 
+class Chunk:
+	def __init__(self, world):
+		self.world = world;
+
+	def update(self, camera, chunk_update_distance):
+		self.world.add();
+
 class World:
 	def __init__(self, main):
 		self.main = main;
@@ -117,6 +124,7 @@ class World:
 		self.group = pyglet.graphics.Group();
 
 		self.batch_list = {};
+		self.chunk = Chunk(self);
 
 	def load_chunk_dirty(self, r, l):
 		length = int(r);
@@ -128,18 +136,18 @@ class World:
 				dirty.init();
 				dirty.set_type("dirty");
 				dirty.refresh(self.main.texture_manager);
-
+	
 				self.add_block(dirty);
+				self.change_block(dirty, "set_vertex");
 
 	def add_block(self, block):
 		self.loaded_block[block] = block;
-		self.loaded_chunk[block] = block;
 
 	def change_block(self, block, action):
 		if action is "unset_vertex" and self.batch_list.__contains__(block):
 			BatchHelper.remove_cube(self.batch_list, block);
 
-		if action is "set_vertex" and self.loaded_chunk.__contains__(block) is False:
+		if action is "set_vertex" and self.batch_list.__contains__(block) is False:
 			self.batch_list[block] = BatchHelper.apply_cube(self.batch, block.groups, block.textures, block.x, block.y, block.z, block.w, block.h, block.l, (255, 255, 255, 255));
 
 		if action is "destroy":
@@ -152,7 +160,7 @@ class World:
 			self.loaded_chunk[block] = block;
 
 		if action is "chunk_update_remove" and self.loaded_chunk.__contains__(block):
-			log("Detected removed chunk update!");
+			log("World", "Detected removed chunk update!");
 
 			self.loaded_chunk.pop(block);
 
@@ -190,26 +198,21 @@ class World:
 		for ids in self.entity_list:
 			self.entity_list[ids].update(delta_time);
 
-		for blocks in self.loaded_chunk:
-			blocks.update();
-
-			if blocks.get_type() is not blocks.get_texture():
-				if blocks.get_type() is not "air":
-					self.change_block(blocks, "unset_vertex");
-					blocks.refresh(self.main.texture_manager);
-					self.change_block(blocks, "set_vertex");
-
-				blocks.set_texture(blocks.get_type());
+		log("" + str(len(self.batch_list)));
 
 		chunk_update_distance = self.main.game_settings.setting_render.value("chunk-distance");
 
+		#self.chunk.update(self.main.camera.position, chunk_update_distance);
+
 		for blocks in self.loaded_block:
-			if Math.block_distance(blocks, self.main.camera.position.x, self.main.camera.position.y, self.main.camera.position.z) > chunk_update_distance or (blocks.get_type() is "air" and blocks.textures.get_type() is "air"):
-				self.change_block(blocks, "unset_vertex");
-				self.change_block(blocks, "chunk_update_remove");
-			else:
-				if (blocks.get_type() is "air" and blocks.textures.get_type() is "air") is False:
-					self.change_block(blocks, "set_vertex");
-					self.change_block(blocks, "chunk_update_add");
+			if self.loaded_chunk.__contains__(blocks):
+				blocks.update();
+	
+				if blocks.get_type() is not blocks.get_texture():
+					if blocks.get_type() is not "air":
+						blocks.refresh(self.main.texture_manager);
+						self.change_block(blocks, "set_vertex");
+	
+					blocks.set_texture(blocks.get_type());
 
 		skybox.update();

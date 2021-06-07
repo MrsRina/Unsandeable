@@ -52,10 +52,15 @@ class BatchHelper:
 		return surface;
 
 	def remove_cube(batch_list, vertex_list):
-		for vertexs in batch_list[vertex_list]:
-			vertexs.delete();
+		count = 0;
 
-		batch_list.pop(vertex_list);
+		for vertex in batch_list[vertex_list]:
+			vertex.delete();
+
+			count += 1;
+
+		if count >= len(batch_list[vertex_list]):
+			batch_list.pop(vertex_list);
 
 	def apply_cube(batch, groups, textures, x, y, z, width, height, lenght, color):
 		w, h, l = x + width, y + height, z + lenght;

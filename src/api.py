@@ -120,7 +120,7 @@ class GameSetting:
 		self.setting_in_game.value("move-crouch", key.LSHIFT);
 
 		# Render settings.
-		self.setting_render.value("chunk-distance", 12);
+		self.setting_render.value("chunk-distance", 40);
 
 		# Registry all settings.
 		self.registry(self.setting_fullscreen);

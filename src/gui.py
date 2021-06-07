@@ -38,7 +38,7 @@ class InitializingPosOpenGameGui(Gui):
 			self.process_game_join();
 
 	def on_close(self):
-		self.main.background = [0, 190, 0];
+		self.main.background = [190, 190, 190];
 		self.main.no_render_world = False;
 
 	def on_open(self):
