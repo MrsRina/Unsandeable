@@ -216,7 +216,7 @@ class Controller:
 	def __init__(self, main, entity, camera):
 		self.main = main;
 		self.entity = entity;
-		self.speed = 200000;
+		self.speed = 1000;
 		self.camera = camera;
 
 	def keyboard(self, keys):

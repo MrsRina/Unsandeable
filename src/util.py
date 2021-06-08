@@ -20,32 +20,23 @@ class FontRenderer(object):
 		except:
 			self.cfont = pyglet.font.load(self.path, self.size);
 
+		self.text = pyglet.text.Label("", font_name = self.font, font_size = self.size, batch = self.batch);
+
 	def get_width(self, string):
 		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_width;
 
 	def get_height(self, string):
 		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_height;
 
-	def render(self, text, x, y, color):
-		label = pyglet.text.Label(text, font_name = self.font, font_size = self.size, batch = self.batch);
+	def instance(self):
+		return self.text;
+
+	def render(self, label, text, x, y, color):
 		label.text = text;
 		label.x = x;
 		label.y = self.main.screen_height - y; # sei la e invertido aquik
 		label.color = color;
 		label.anchor_y = "bottom";
-
-		GL11.glPushMatrix();
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		
-		label.draw();
-
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPopMatrix();
 
 class BatchHelper:
 	def group_texture(surface):

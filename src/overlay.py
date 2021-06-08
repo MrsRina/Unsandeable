@@ -7,7 +7,7 @@ class Debug(Overlay):
 		super().__init__("Debug");
 
 		self.main = main;
-		self.font_renderer = self.main.font_renderer;
+		self.font_renderer = self.main.font_renderer.instance();
 
 	def draw(self, partial_ticks):
 		text = [String.vec_to_string(self.main.camera.position),
@@ -17,6 +17,6 @@ class Debug(Overlay):
 		cache_position_y = 1;
 
 		for texts in text:
-			self.font_renderer.render(texts, 1, cache_position_y, (255, 255, 255, 255));
+			self.main.font_renderer.render(self.font_renderer, texts, 1, cache_position_y, (255, 255, 255, 255));
 
-			cache_position_y += self.font_renderer.get_height(texts);
+			cache_position_y += self.font_renderer.content_height;

@@ -185,6 +185,19 @@ class Main(pyglet.window.Window):
 		if self.world is not None and self.game_gui.current_gui is None:
 			self.overlay_manager.render();
 
+		GL11.glPushMatrix();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		
+		self.font_renderer.text.draw();
+
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glPopMatrix();
+
 	def mouse_event(self, mx, my, key, state):
 		# Eu to processando assim agora vou ir dormir, isso e otro diakkkkk sao quase 3 horas da manha.
 		# Meu Deus, eu preciso de um namorado.
