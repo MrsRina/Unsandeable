@@ -2,6 +2,7 @@ from util import Vec, GameRenderGL, Math;
 from pyglet.window import key;
 
 import pyglet;
+import flag;
 import math;
 
 # Shows problem on game, infos or warings using log system.
@@ -120,7 +121,7 @@ class GameSetting:
 		self.setting_in_game.value("move-crouch", key.LSHIFT);
 
 		# Render settings.
-		self.setting_render.value("chunk-distance", 1);
+		self.setting_render.value("chunk-distance", 6);
 
 		# Registry all settings.
 		self.registry(self.setting_fullscreen);
@@ -270,7 +271,7 @@ class Camera:
 		GameRenderGL.identity();
 		GameRenderGL.rotate(self.pitch, 1, 0, 0)
 		GameRenderGL.rotate(360 - self.yaw, 0, 1, 0);
-		GameRenderGL.position(-self.position.x, -self.position.y, -self.position.z);
+		GameRenderGL.position(-self.position.x * flag.SIZE, -self.position.y * flag.SIZE, -self.position.z * flag.SIZE);
 
 	def update_mouse(self):
 		if self.focus:

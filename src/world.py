@@ -6,6 +6,30 @@ import pyglet;
 import flag;
 import os;
 
+def load(main, name = "World", r = None):
+	world = World(main, name);
+
+	chunk = None;
+	chunk_block_list = [];
+
+	cx = -r;
+	cy = -r;
+	cz = -r;
+
+	y = flag.WORLD_HEIGHT[0]; # 0 = minimum; 1 = maximum
+
+	for x in flag.RANGE(0, r * 2):
+		for z in flag.RANGE(cz, cz + r):
+			block = Block();
+
+			block.position.x = x * flag.SIZE;
+			block.position.y = y;
+			block.position.z = z * flag.SIZE;
+
+			world.add_block(block);
+
+	return world;
+
 class Skybox:
 	x = 0;
 	y = 0;
@@ -42,16 +66,11 @@ class Skybox:
 			return;
 
 class Block:
-	def __init__(self, x, y, z):
+	def __init__(self):
 		self.flag = Data("Block");
 
-		self.x = x;
-		self.y = y;
-		self.z = z;
-
-		self.w = 0.5;
-		self.h = 0.5;
-		self.l = 0.5;
+		self.position = Vec(0, 0, 0);
+		self.extend = Vec(flag.SIZE, flag.SIZE, flag.SIZE);
 
 		self.color = [0, 0, 0, 100];
 		self.textures = {};
@@ -122,7 +141,7 @@ class Chunk:
 			self.loaded_block.pop(block);
 
 class World:
-	def __init__(self, main):
+	def __init__(self, main, name):
 		self.main = main;
 
 		self.loaded_chunk = {}; # Vou usar pra salvar todos os blocos do mundo.
@@ -138,52 +157,11 @@ class World:
 		self.entity_list = {};
 		self.chunk_update_list = {}; # O que fica na memoria ram!
 
-	def load_chunk_dirty(self, r, l):
-		length = int(r);
-		y = int(l);
-
-		chunk_size = 24;
-		chunk = None;
-
-		count_x = 0;
-		count_z = 0;
-
-		for x in range(-length, length):
-			count_x += 1;
-
-			for z in range(-length, length):
-				count_z += 1;
-
-				dirty = Block(x - 0.5, y, z - 0.5);
-				dirty.init();
-				dirty.set_type("dirty");
-				dirty.refresh(self.main.texture_manager);
-	
-				self.add_block(dirty);
-
-				if chunk is None or count_x >= chunk_size or count_z >= chunk_size:
-					if count_x >= chunk_size:
-						count_x = 0;
-
-					if count_z >= chunk_size:
-						count_z = 0;
-
-					chunk = Chunk(self);
-
-					chunk.position.x = x - 0.5;
-					chunk.position.z = z - 0.5;
-
-					chunk.extend.x = chunk_size;
-					chunk.extend.y = chunk_size;
-					chunk.extend.z = chunk_size;
-
-					self.add_chunk(chunk);
-					self.chunk_block(dirty, chunk, flag.ADD);
-
-				self.change_block(dirty, "set_vertex");
+		self.chunk_size = 4;
+		self.name = name;
 
 	def add_block(self, block):
-		self.loaded_block[(block.x, block.y, block.z)] = block;
+		self.loaded_block[(block.position.x, block.position.y, block.position.z)] = block;
 
 	def add_chunk(self, chunk):
 		self.loaded_chunk[chunk] = chunk;
@@ -200,13 +178,13 @@ class World:
 			BatchHelper.remove_cube(self.batch_list, block);
 
 		if action == "set_vertex" and self.batch_list.__contains__(block) is False:
-			self.batch_list[block] = BatchHelper.apply_cube(self.batch, block.groups, block.textures, block.x, block.y, block.z, block.w, block.h, block.l, (255, 255, 255, 255));
+			self.batch_list[block] = BatchHelper.apply_cube(self.batch, block.groups, block.textures, block.position.x, block.position.y, block.position.z, block.extend.x, block.extend.y, block.extend.z, (255, 255, 255, 255));
 
 		if action == "destroy":
 			self.loaded_block.pop(block);
 
-	def refresh_chunk(self, chunk, action):
-		if action == "remove" and self.chunk_update_list.__contains__(chunk):
+	def refresh_chunk(self, block.extendx action):
+		 action == "remove" and self.chunk_update_list.__contains__(chunk):
 			log("Detected removed chunk update!");
 
 			for blocks in chunk.loaded_block:

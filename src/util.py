@@ -20,7 +20,7 @@ class FontRenderer(object):
 		except:
 			self.cfont = pyglet.font.load(self.path, self.size);
 
-		self.text = pyglet.text.Label("", font_name = self.font, font_size = self.size, batch = self.batch);
+		self.text = None;
 
 	def get_width(self, string):
 		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_width;
@@ -29,7 +29,7 @@ class FontRenderer(object):
 		return pyglet.text.Label(string, font_name = self.font, font_size = self.size).content_height;
 
 	def instance(self):
-		return self.text;
+		return pyglet.text.Label("", font_name = self.font, font_size = self.size, batch = self.batch);
 
 	def render(self, label, text, x, y, color):
 		label.text = text;
@@ -37,6 +37,7 @@ class FontRenderer(object):
 		label.y = self.main.screen_height - y; # sei la e invertido aquik
 		label.color = color;
 		label.anchor_y = "bottom";
+		label.draw();
 
 class BatchHelper:
 	def group_texture(surface):

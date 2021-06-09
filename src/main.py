@@ -66,19 +66,13 @@ class Main(pyglet.window.Window):
 
 		log("Player ID " + str(self.player.id) + " client initialized.");
 
-		# World.
-		self.world = World(self);
-		self.world.add_entity(self.player);
-
-		log("Dev world initialized.");
-
 		# O skybox e iniciado aqui, porem... eu modifico no meio do jogo.
 		self.skybox = Skybox("textures/blocks/dirty/dirty_ISSUE");
 		self.skybox.init();
 
 		# The batch for render all and font for draw texts on game.
 		self.batch = pyglet.graphics.Batch();
-		self.font_renderer = FontRenderer(self, self.batch, "Arial", 19);
+		self.font_renderer = FontRenderer(self, None, "Whitney", 19);
 
 		log("Render stuff initialized.");
 
@@ -144,10 +138,10 @@ class Main(pyglet.window.Window):
 		self.window.push_handlers(self.keys);
 
 		self.rel = [0, 0];
+		self.world = None;
 
 		# Abrimos a primeira gui do jogo.
 		self.game_gui.open("InitializingPosOpenGame");
-		self.world.load_chunk_dirty(12, 0);
 
 	def render(self):
 		GameRenderGL.clear(self);
@@ -184,19 +178,6 @@ class Main(pyglet.window.Window):
 
 		if self.world is not None and self.game_gui.current_gui is None:
 			self.overlay_manager.render();
-
-		GL11.glPushMatrix();
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-
-		GL11.glEnable(GL11.GL_BLEND);
-		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-		
-		self.font_renderer.text.draw();
-
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-		GL11.glDisable(GL11.GL_BLEND);
-		GL11.glPopMatrix();
 
 	def mouse_event(self, mx, my, key, state):
 		# Eu to processando assim agora vou ir dormir, isso e otro diakkkkk sao quase 3 horas da manha.
@@ -284,8 +265,6 @@ if (__name__ == "__main__"):
 		game.render();
 
 	game.init();
-
 	pyglet.clock.schedule(game.update);
-
 	GameRenderGL.setup(game);
 	pyglet.app.run();

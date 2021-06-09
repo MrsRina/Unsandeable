@@ -7,6 +7,7 @@ class Entity:
 		self.rendering = True;
 		self.position = Vec(0, 0, 0);
 		self.position_linear = Vec(0, 0, 0);
+		self.velocity = Vec(0, 0, 0);
 		self.id = 0;
 
 	def init(self):

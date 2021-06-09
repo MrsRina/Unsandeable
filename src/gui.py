@@ -2,6 +2,7 @@ from api import Gui;
 from util import Math;
 
 import pyglet;
+import world;
 import flag;
 
 class GamePaused(Gui):
@@ -33,6 +34,8 @@ class InitializingPosOpenGameGui(Gui):
 		self.font_renderer = self.main.font_renderer.instance();
 
 	def process_game_join(self):
+		self.main.world = world.load(self.main, "Eu Sou Trans e Linda", 24);
+
 		self.start_close = True;
 
 	def on_key_event(self, key, state):
