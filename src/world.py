@@ -27,6 +27,7 @@ def load(main, name = "World", r = None):
 			block.position.z = z * flag.SIZE;
 
 			world.add_block(block);
+			# :(
 
 	return world;
 
