@@ -8,26 +8,67 @@ import os;
 
 def load(main, name = "World", r = None):
 	world = World(main, name);
+	chunk = Chunk(world);
 
-	chunk = None;
-	chunk_block_list = [];
+	world.add_entity(main.player);
 
-	cx = -r;
-	cy = -r;
-	cz = -r;
+	cx = -r * flag.SIZE;
+	cy = -r * flag.SIZE;
+	cz = -r * flag.SIZE;
 
+	chunk.position.x = cx;
+	chunk.position.y = cy;
+	chunk.position.z = cz;
+
+	x = 0;
 	y = flag.WORLD_HEIGHT[0]; # 0 = minimum; 1 = maximum
+	z = 0;
 
-	for x in flag.RANGE(0, r * 2):
-		for z in flag.RANGE(cz, cz + r):
+	for distance_x in flag.RANGE(0, r * 2):
+		update = True;
+
+		for distance_z in flag.RANGE(0, flag.CHUNK_SIZE + 1):
 			block = Block();
+			block.init();
+			block.set_type("dirty")
+			block.refresh(main.texture_manager);
 
-			block.position.x = x * flag.SIZE;
+			block.position.x = cx + (x * flag.SIZE);
 			block.position.y = y;
-			block.position.z = z * flag.SIZE;
+			block.position.z = cz + (z * flag.SIZE);
+
+			chunk.add(block);
+
+			if x >= flag.CHUNK_SIZE and z >= flag.CHUNK_SIZE:
+				x = 0;
+				z = 0;
+
+				update = False;
+
+				log("Detected chunk generate!")
+
+				chunk.extend.x = flag.CHUNK_SIZE * flag.SIZE;
+				chunk.extend.y = flag.CHUNK_SIZE * flag.SIZE;
+				chunk.extend.z = flag.CHUNK_SIZE * flag.SIZE; 
+
+				cz += flag.CHUNK_SIZE * flag.SIZE;
+
+				world.add_chunk(chunk);
+
+				chunk = Chunk(world);
+
+				chunk.position.x = cx;
+				chunk.position.y = cy;
+				chunk.position.z = cz;
+
+			if update:
+				z += 1;
 
 			world.add_block(block);
-			# :(
+			world.change_block(block, "set_vertex");
+		
+		if update:
+			x += 1;
 
 	return world;
 
@@ -184,8 +225,8 @@ class World:
 		if action == "destroy":
 			self.loaded_block.pop(block);
 
-	def refresh_chunk(self, block.extendx action):
-		 action == "remove" and self.chunk_update_list.__contains__(chunk):
+	def refresh_chunk(self, chunk, action):
+		if action == "remove" and self.chunk_update_list.__contains__(chunk):
 			log("Detected removed chunk update!");
 
 			for blocks in chunk.loaded_block:
