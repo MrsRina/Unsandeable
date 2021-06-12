@@ -20,38 +20,46 @@ def load(main, name = "World", r = None):
 	chunk.position.y = cy;
 	chunk.position.z = cz;
 
-	x = 0;
-	y = flag.WORLD_HEIGHT[0]; # 0 = minimum; 1 = maximum
-	z = 0;
+	chunk_refresh_x = -1;
 
-	for distance_x in flag.RANGE(0, r * 2):
+	y = flag.WORLD_HEIGHT[0]; # 0 = minimum; 1 = maximum
+
+	for x in flag.RANGE(0, r * 2):
 		update = True;
 
-		for distance_z in flag.RANGE(0, flag.CHUNK_SIZE + 1):
+		chunk_refresh_x += 1;
+		chunk_refresh_z = -1;
+
+		for z in flag.RANGE(0, r * 2):
+			chunk_refresh_z += 1;
+
 			block = Block();
 			block.init();
 			block.set_type("dirty")
 			block.refresh(main.texture_manager);
 
-			block.position.x = cx + (x * flag.SIZE);
+			block.position.x = cx + (chunk_refresh_x * flag.SIZE);
 			block.position.y = y;
-			block.position.z = cz + (z * flag.SIZE);
+			block.position.z = cz + (chunk_refresh_z * flag.SIZE);
 
 			chunk.add(block);
 
-			if x >= flag.CHUNK_SIZE and z >= flag.CHUNK_SIZE:
-				x = 0;
-				z = 0;
+			world.add_block(block);
+			world.change_block(block, "set_vertex");
 
+			log(str(cz - (z * flag.SIZE)) + " " + str(cz - (z * flag.SIZE)));
+
+			if chunk_refresh_x * flag.SIZE >= flag.CHUNK_SIZE * flag.SIZE and chunk_refresh_z * flag.SIZE >= flag.CHUNK_SIZE * flag.SIZE:
 				update = False;
 
 				log("Detected chunk generate!")
 
+				#cx += flag.CHUNK_SIZE * flag.SIZE;
+				#cz += flag.CHUNK_SIZE * flag.SIZE;
+
 				chunk.extend.x = flag.CHUNK_SIZE * flag.SIZE;
 				chunk.extend.y = flag.CHUNK_SIZE * flag.SIZE;
-				chunk.extend.z = flag.CHUNK_SIZE * flag.SIZE; 
-
-				cz += flag.CHUNK_SIZE * flag.SIZE;
+				chunk.extend.z = flag.CHUNK_SIZE * flag.SIZE;
 
 				world.add_chunk(chunk);
 
@@ -61,14 +69,10 @@ def load(main, name = "World", r = None):
 				chunk.position.y = cy;
 				chunk.position.z = cz;
 
-			if update:
-				z += 1;
+				chunk_refresh_x = -1;
+				chunk_refresh_z = -1;
 
-			world.add_block(block);
-			world.change_block(block, "set_vertex");
-		
-		if update:
-			x += 1;
+				break;
 
 	return world;
 

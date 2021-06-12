@@ -34,7 +34,7 @@ class InitializingPosOpenGameGui(Gui):
 		self.font_renderer = self.main.font_renderer.instance();
 
 	def process_game_join(self):
-		self.main.world = world.load(self.main, "Eu Sou Trans e Linda", 24);
+		self.main.world = world.load(self.main, "Eu Sou Trans e Linda", 4);
 
 		self.start_close = True;
 
