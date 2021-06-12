@@ -60,13 +60,13 @@ class BatchHelper:
 		tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1));
 
 		vertex_list = [
-			batch.add(4, GL_QUADS, groups["back"], ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords), # back
-			batch.add(4, GL_QUADS, groups["front"], ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords), # front
+			#batch.add(4, GL_QUADS, groups["back"], ('v3f', (w, y, z,  x, y, z,  x, h, z,  w, h, z)), tex_coords), # back
+			#batch.add(4, GL_QUADS, groups["front"], ('v3f', (x, y, l,  w, y, l,  w, h, l,  x, h, l)), tex_coords), # front
 	
-			batch.add(4, GL_QUADS, groups["left"], ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords),  # left
-			batch.add(4, GL_QUADS, groups["right"], ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords),  # right
+			#batch.add(4, GL_QUADS, groups["left"], ('v3f', (x, y, z,  x, y, l,  x, h, l,  x, h, z)), tex_coords),  # left
+			#batch.add(4, GL_QUADS, groups["right"], ('v3f', (w, y, l,  w, y, z,  w, h, z,  w, h, l)), tex_coords),  # right
 	
-			batch.add(4, GL_QUADS, groups["down"], ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords),  # bottom
+			#batch.add(4, GL_QUADS, groups["down"], ('v3f', (x, y, z,  w, y, z,  w, y, l,  x, y, l)), tex_coords),  # bottom
 			batch.add(4, GL_QUADS, groups["up"], ('v3f', (x, h, l,  w, h, l,  w, h, z,  x, h, z)), tex_coords)  # top
 		];
 
