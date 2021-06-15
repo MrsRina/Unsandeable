@@ -255,8 +255,8 @@ class Math:
 		return math.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);
 
 	def object_distance(obj_x, obj_y, obj_z, obj_w, obj_h, obj_l, x, y, z):
-		diff_x = (obj_x + obj_w) - x;
+		diff_x = (obj_x + obj_w / 2) - x;
 		diff_y = (obj_y + obj_h) - y;
-		diff_z = (obj_z + obj_l) - z;
+		diff_z = (obj_z + obj_l / 2) - z;
 
 		return math.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z);

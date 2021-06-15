@@ -20,10 +20,13 @@ def load(main, name = "World", r = None):
 	chunk.position.y = cy;
 	chunk.position.z = cz;
 
+	x = 1;
 	y = flag.WORLD_HEIGHT[0]; # 0 = minimum; 1 = maximum
 
-	for x in flag.RANGE(0, flag.CHUNK_SIZE * r):
-		for z in flag.RANGE(0, flag.CHUNK_SIZE * r):
+	for rx in flag.RANGE(0, (r + 0) * 2):
+		z = 1;
+
+		for rz in flag.RANGE(0, (r + 0) * 2):
 			block = Block();
 			block.init();
 			block.set_type("dirty")
@@ -38,13 +41,8 @@ def load(main, name = "World", r = None):
 			world.add_block(block);
 			world.change_block(block, "set_vertex");
 
-			log(str(cz - (z * flag.SIZE)) + " " + str(cz - (z * flag.SIZE)));
-
-			if ((cx - (x * flag.SIZE) == ((flag.CHUNK_SIZE - flag.CHUNK_SIZE) - flag.CHUNK_SIZE) * flag.SIZE) or cx - (x * flag.SIZE) == flag.CHUNK_SIZE * flag.SIZE) and (cz - (z * flag.SIZE) == (((flag.CHUNK_SIZE - flag.CHUNK_SIZE) - flag.CHUNK_SIZE) * flag.SIZE) or cz - (z * flag.SIZE) == flag.CHUNK_SIZE * flag.SIZE):
+			if x >= flag.CHUNK_SIZE and z >= flag.CHUNK_SIZE:
 				log("Detected chunk generate!")
-
-				cz += flag.CHUNK_SIZE * flag.SIZE;
-				cx += flag.CHUNK_SIZE * flag.SIZE;
 
 				chunk.extend.x = flag.CHUNK_SIZE * flag.SIZE;
 				chunk.extend.y = flag.CHUNK_SIZE * flag.SIZE;
@@ -57,6 +55,19 @@ def load(main, name = "World", r = None):
 				chunk.position.x = cx;
 				chunk.position.y = cy;
 				chunk.position.z = cz;
+
+				x = 1;
+				z = 1;
+
+				break;
+
+			if z >= flag.CHUNK_SIZE:
+				z = 1;
+
+				break;
+
+			z += 1;
+		x += 1;
 
 	return world;
 
@@ -275,8 +286,6 @@ class World:
 				self.refresh_chunk(chunks, "remove");
 			else:
 				self.refresh_chunk(chunks, "add");
-
-				log("nigger");
 
 		for chunks in self.chunk_update_list:
 			for blocks in chunks.loaded_block:
