@@ -19,6 +19,7 @@ print("Running now, Unsandeable dev version.");
 # Resolvi reescrever de madrugada, sao literalmente 02:07 da manha...
 # Agora sim... eu vou fazer isso aqui pra ser algo insano, eu to pensando na real.
 # e em fazer outro jogo, hihi... nao 3D e nem Minecraft.
+# Resolvi participar de uma jaaj e usar esse jogo!!
 class Main(pyglet.window.Window):
 	def __init__(self):
 		# Nigger.

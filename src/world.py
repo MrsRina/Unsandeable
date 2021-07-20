@@ -29,7 +29,7 @@ def load(main, name = "World", r = None):
 		for rz in flag.RANGE(0, (r + 0) * 2):
 			block = Block();
 			block.init();
-			block.set_type("dirty")
+			block.set_type("dirty");
 			block.refresh(main.texture_manager);
 
 			block.position.x = cx + (x * flag.SIZE);
